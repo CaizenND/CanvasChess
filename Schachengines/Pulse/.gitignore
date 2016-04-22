@@ -1,0 +1,32 @@
+# Maven
+target/
+
+# CMake
+build/
+
+# Eclipse
+.settings/
+bin/
+.classpath
+.project
+
+# IntelliJ IDEA
+.idea/
+out/
+*.iml
+
+# Visual Studio
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.suo
+*.user
+*.sdf
+*.opensdf
+Debug/
+Release/
+ipch/
+
+# Other
+vendor/
+run/
