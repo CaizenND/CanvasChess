@@ -12,11 +12,11 @@ function createCanvas() {
 }
 
 function createBoard() {
-  ctx.fillStyle = "white";
+  ctx.fillStyle = "Ivory";
   ctx.fillRect(0,0,800,800);
   ctx.fill();
 
-  ctx.fillStyle = "black";
+  ctx.fillStyle = "BurlyWood";
   for (i = 0; i < 8; i++) {
     for (j = 0; j < 8; j++) {
       if ((i+j)%2 == 1) {
