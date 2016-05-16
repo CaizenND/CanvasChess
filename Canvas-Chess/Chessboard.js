@@ -146,7 +146,12 @@ Chessboard.prototype.draw = function() {
   }
   ctx.restore();
   for (var i = 0; i < this.pieces.length; i++) {
-    this.pieces[i].draw();
+    if (this.pieces[i] != this.canvas.draggedPiece) {
+      this.pieces[i].draw();
+    }
+  }
+  if (this.canvas.draggedPiece != null) {
+    this.canvas.draggedPiece.draw();
   }
 };
 

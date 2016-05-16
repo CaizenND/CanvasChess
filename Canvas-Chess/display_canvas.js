@@ -27,6 +27,7 @@ var P4WN_SQUARE_WIDTH = P4WN_SQUARE_HEIGHT;
 // Eigene
 var P4WN_BOARD_OFFSET_TOP = P4WN_SQUARE_HEIGHT*0.8;
 var P4WN_BOARD_OFFSET_LEFT = P4WN_SQUARE_WIDTH*0.8;
+var P4WN_INTERACTION_STYLE = 1;
 
 var P4WN_WRAPPER_CLASS = 'p4wn-wrapper';
 var P4WN_BOARD_CLASS = 'p4wn-board';
@@ -187,12 +188,19 @@ _p4d_proto.write_board_html = function() {
   var chessboard = new Chessboard(canvas);
   chessboard.create();
   canvas.chessboard = chessboard;
-  // Scheiß javascript !!!
+  // geht das auch schöner ?
   var passThis = this;
-  var mouseDownListenerThis = function(evt) {
-    mouseDownListener(evt, passThis, mouseDownListenerThis);
-  };
-  canvas.addEventListener("mousedown", mouseDownListenerThis, false);
+  if (P4WN_INTERACTION_STYLE == 1) {
+    var mouseDownListenerStartThis = function(evt) {
+      mouseDownListenerStart(evt, passThis, mouseDownListenerStartThis);
+    };
+    canvas.addEventListener("mousedown", mouseDownListenerStartThis, false);
+  } else if (P4WN_INTERACTION_STYLE == 2) {
+    var mouseUpListenerStartThis = function(evt) {
+      mouseUpListenerStart(evt, passThis, mouseUpListenerStartThis);
+    };
+    canvas.addEventListener("mouseup", mouseUpListenerStartThis, false);
+  }
 };
 
 _p4d_proto.refresh_buttons = function() {
@@ -475,97 +483,139 @@ function p4wnify(id) {
 
 P4wn_display.prototype = _p4d_proto;
 
-function mouseDownListener(evt, p4d, mouseDownFunction) {
+function mouseDownListenerStart(event, p4d, mouseDownFunctionStart) {
   var canvas = p4d.elements.boardCanvas;
   var board = canvas.chessboard;
 
   var bRect = canvas.getBoundingClientRect();
-  mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
-  mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
+  mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
+  mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
 
   for (var i = 0; i < board.pieces.length; i++) {
     var piece = board.pieces[i];
     if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
-      && mouseY >= piece.posY && mouseY <= piece.posY + piece.size
-      && piece.captured == false) {
+      && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
         canvas.dragging = true;
         canvas.dragHoldX = mouseX - piece.posX;
         canvas.dragHoldY = mouseY - piece.posY;
         canvas.draggedPiece = piece;
-      }
     }
+  }
+
+  if (canvas.dragging) {
     var mouseMoveListenerThis = function(evt) {
       mouseMoveListener(evt, p4d);
     };
-    var mouseUpListenerThis = function(evt) {
-      mouseUpListener(evt, p4d, mouseUpListenerThis, mouseMoveListenerThis);
+    var mouseUpListenerTargetThis = function(evt) {
+      mouseUpListenerTarget(evt, p4d, mouseUpListenerTargetThis, mouseMoveListenerThis);
     };
-
-    if (canvas.dragging) {
-      window.addEventListener("mousemove", mouseMoveListenerThis, false);
-    }
-    canvas.removeEventListener("mousedown", mouseDownFunction, false);
-    window.addEventListener("mouseup", mouseUpListenerThis, false);
-    return false;
+    window.addEventListener("mousemove", mouseMoveListenerThis, false);
+    canvas.removeEventListener("mousedown", mouseDownFunctionStart, false);
+    window.addEventListener("mouseup", mouseUpListenerTargetThis, false);
   }
+  return false;
+}
 
-  function mouseUpListener(evt, p4d, mouseUpFunction, mouseMoveFunction) {
-    var canvas = p4d.elements.boardCanvas;
-    var mouseDownListenerThis = function(evt) {
-      mouseDownListener(evt, p4d, mouseDownListenerThis);
+function mouseUpListenerStart(event, p4d, mouseUpFunctionStart) {
+  var canvas = p4d.elements.boardCanvas;
+  var board = canvas.chessboard;
+
+  var bRect = canvas.getBoundingClientRect();
+  mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
+  mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+
+  for (var i = 0; i < board.pieces.length; i++) {
+    var piece = board.pieces[i];
+    if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
+      && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
+        canvas.dragging = true;
+        canvas.dragHoldX = mouseX - piece.posX;
+        canvas.dragHoldY = mouseY - piece.posY;
+        canvas.draggedPiece = piece;
+    }
+  }
+  if (canvas.dragging) {
+    var mouseMoveListenerThis = function(evt) {
+      mouseMoveListener(evt, p4d);
     };
-    canvas.addEventListener("mousedown", mouseDownListenerThis, false);
-    window.removeEventListener("mouseup", mouseUpFunction, false);
-    if (canvas.dragging) {
-      var piece = canvas.draggedPiece;
-      var startField = null;
-      var targetField = null;
-      for (var i = 0; i < 8; i++) {
-        for (var j = 0; j < 8; j++) {
-          var currentField = canvas.chessboard.fields[i][j];
-          var bRect = canvas.getBoundingClientRect();
-          mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
-          mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
+    var mouseUpListenerTargetThis = function(evt) {
+      mouseUpListenerTarget(evt, p4d, mouseUpListenerTargetThis, mouseMoveListenerThis);
+    };
 
-          if (currentField.piece == piece) {
-            startField = currentField;
-          }
-          if (mouseX >= currentField.posX && mouseX <= currentField.posX + currentField.size
-            && mouseY >= currentField.posY && mouseY <= currentField.posY + currentField.size) {
-              targetField = currentField;
-            }
-          }
+    window.addEventListener("mousemove", mouseMoveListenerThis, false);
+    canvas.removeEventListener("mouseup", mouseUpFunctionStart, false);
+    canvas.startEvent = event;
+    window.addEventListener("mouseup", mouseUpListenerTargetThis, false);
+  }
+  return false;
+}
+
+function mouseMoveListener(event, p4d) {
+  var canvas = p4d.elements.boardCanvas;
+  var posX;
+  var posY;
+  var shapeRad = canvas.draggedPiece.size;
+  var minX = 0;
+  var maxX = canvas.width - shapeRad;
+  var minY = 0;
+  var maxY = canvas.height - shapeRad;
+  //getting mouse position correctly
+  var bRect = canvas.getBoundingClientRect();
+  mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
+  mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+
+  //clamp x and y positions to prevent object from dragging outside of canvas
+  posX = mouseX - canvas.dragHoldX;
+  posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
+  posY = mouseY - canvas.dragHoldY;
+  posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
+
+  canvas.draggedPiece.posX = posX;
+  canvas.draggedPiece.posY = posY;
+
+  canvas.chessboard.draw();
+}
+
+function mouseUpListenerTarget(event, p4d, mouseUpFunctionTarget, mouseMoveFunction) {
+  var canvas = p4d.elements.boardCanvas;
+  if (canvas.startEvent != event) {
+    var piece = canvas.draggedPiece;
+    var startField = null;
+    var targetField = null;
+    for (var i = 0; i < 8; i++) {
+      for (var j = 0; j < 8; j++) {
+        var currentField = canvas.chessboard.fields[i][j];
+        var bRect = canvas.getBoundingClientRect();
+        mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
+        mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+
+        if (currentField.piece == piece) {
+          startField = currentField;
         }
-        p4d.move(startField.outputID, targetField.outputID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
-        p4d.refresh();
-        canvas.dragging = false;
-        canvas.draggedPiece = null;
-        window.removeEventListener("mousemove", mouseMoveFunction, false);
+        if (mouseX >= currentField.posX && mouseX <= currentField.posX + currentField.size
+          && mouseY >= currentField.posY && mouseY <= currentField.posY + currentField.size) {
+            targetField = currentField;
+        }
       }
     }
-
-    function mouseMoveListener(evt, p4d) {
-      var canvas = p4d.elements.boardCanvas;
-      var posX;
-      var posY;
-      var shapeRad = canvas.draggedPiece.size;
-      var minX = 0;
-      var maxX = canvas.width - shapeRad;
-      var minY = 0;
-      var maxY = canvas.height - shapeRad;
-      //getting mouse position correctly
-      var bRect = canvas.getBoundingClientRect();
-      mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
-      mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
-
-      //clamp x and y positions to prevent object from dragging outside of canvas
-      posX = mouseX - canvas.dragHoldX;
-      posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
-      posY = mouseY - canvas.dragHoldY;
-      posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
-
-      canvas.draggedPiece.posX = posX;
-      canvas.draggedPiece.posY = posY;
-
-      canvas.chessboard.draw();
+    if (targetField != null) {
+      window.removeEventListener("mousemove", mouseMoveFunction, false);
+      window.removeEventListener("mouseup", mouseUpFunctionTarget, false);
+      if (P4WN_INTERACTION_STYLE == 1) {
+        var mouseDownListenerStartThis = function(evt) {
+          mouseDownListenerStart(evt, p4d, mouseDownListenerStartThis);
+        };
+        canvas.addEventListener("mousedown", mouseDownListenerStartThis, false);
+      } else if (P4WN_INTERACTION_STYLE == 2) {
+        var mouseUpListenerStartThis = function(evt) {
+          mouseUpListenerStart(evt, p4d, mouseUpListenerStartThis);
+        };
+        canvas.addEventListener("mouseup", mouseUpListenerStartThis, false);
+      }
+      p4d.move(startField.outputID, targetField.outputID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
+      canvas.dragging = false;
+      canvas.draggedPiece = null;
+      p4d.refresh();
     }
+  }
+}
