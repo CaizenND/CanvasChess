@@ -19,8 +19,12 @@
 
 
 <script>
+// ACHTUNG: Zug (letzte Zahl) = 0, sonst kein undo möglich
+P4WN_CUSTOM_START = "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 11 0";
 var game = p4wnify("board-goes-here");
-<!-- game.next_move(); -->
+game.next_move();
+//var moves = [["h2", "d4"],["a2", "c5"],["h1", "a8"]];
+//game.animateMoves(moves);
 </script>
 <!-- Uncomment if you like to optimize to screen resolution -->
 <!-- script src="resolutionawareness.js"></script -->

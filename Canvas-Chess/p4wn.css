@@ -18,7 +18,7 @@
   position: relative;
   left: 0px;
   top: 0px;
-  border:1px solid red;
+  /* border:1px solid red; */
   float: left;
 }
 
@@ -29,12 +29,12 @@
   overflow: auto;
   max-width: 14em;
   height: 90%;
-  border:1px solid blue;
+  /* border:1px solid blue; */
 }
 
 .p4wn-controls{
   clear: both;
-  border:1px solid green;
+  /* border:1px solid green; */
 }
 
 .p4wn-control-button {
@@ -51,5 +51,5 @@
 }
 
 .p4wn-wrapper{
-  border: 1px solid yellow;
+  /* border: 1px solid yellow; */
 }

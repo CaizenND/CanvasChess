@@ -23,11 +23,12 @@
 // Übernommen
 var P4WN_SQUARE_HEIGHT = 40;
 var P4WN_SQUARE_WIDTH = P4WN_SQUARE_HEIGHT;
+var P4WN_CUSTOM_START = null;
 
 // Eigene
 var P4WN_BOARD_OFFSET_TOP = P4WN_SQUARE_HEIGHT*0.8;
 var P4WN_BOARD_OFFSET_LEFT = P4WN_SQUARE_WIDTH*0.8;
-var P4WN_INTERACTION_STYLE = 1;
+var P4WN_INTERACTION_STYLE = 2;
 
 var P4WN_WRAPPER_CLASS = 'p4wn-wrapper';
 var P4WN_BOARD_CLASS = 'p4wn-board';
@@ -93,7 +94,7 @@ _p4d_proto.next_move = function()  {
     var timeout = (this.players[1 - mover] == 'computer') ? 500: 10;
     var p4d = this;
     this.auto_play_timeout = window.setTimeout(function() {p4d.computer_move();},
-    timeout);
+      timeout);
   }
 };
 
@@ -115,11 +116,10 @@ _p4d_proto.computer_move = function() {
             p4_log("retry at depth", depth, " total time:", delta);
         }
     }
-    this.move(mv[0], mv[1]);
-    var start = this.elements.boardCanvas.chessboard.convertNotation(mv[0]);
-    var target = this.elements.boardCanvas.chessboard.convertNotation(mv[1]);
-    this.refresh();
-    this.elements.boardCanvas.chessboard.draw();
+    var start = this.convertBoardNotation(mv[0]);
+    var target = this.convertBoardNotation(mv[1]);
+    var timeout = this.animateMove(start, target,
+      function() {this.move(mv[0], mv[1]);}.bind(this));
 };
 
 _p4d_proto.display_move_text = function(moveno, string) {
@@ -171,7 +171,6 @@ _p4d_proto.goto_move = function(n) {
 
 _p4d_proto.refresh = function() {
   this.elements.boardCanvas.chessboard.loadBoard(this.board_state);
-  this.elements.boardCanvas.chessboard.draw();
 };
 
 function p4d_new_child(element, childtag, className) {
@@ -188,18 +187,16 @@ _p4d_proto.write_board_html = function() {
   var chessboard = new Chessboard(canvas);
   chessboard.create();
   canvas.chessboard = chessboard;
-  // geht das auch schöner ?
-  var passThis = this;
+  canvas.interactionListener = {};
+  canvas.interactionListener.startListener = null;
+  canvas.interactionListener.moveListenerListener = null;
+  canvas.interactionListener.targetListener = null;
   if (P4WN_INTERACTION_STYLE == 1) {
-    var mouseDownListenerStartThis = function(evt) {
-      mouseDownListenerStart(evt, passThis, mouseDownListenerStartThis);
-    };
-    canvas.addEventListener("mousedown", mouseDownListenerStartThis, false);
+    canvas.interactionListener.startListener = mouseDownListenerStart.bind(this);
+    canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
   } else if (P4WN_INTERACTION_STYLE == 2) {
-    var mouseUpListenerStartThis = function(evt) {
-      mouseUpListenerStart(evt, passThis, mouseUpListenerStartThis);
-    };
-    canvas.addEventListener("mouseup", mouseUpListenerStartThis, false);
+    canvas.interactionListener.startListener = mouseUpListenerStart.bind(this);
+    canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
   }
 };
 
@@ -471,25 +468,119 @@ _p4d_proto.render_elements = function() {
   e.controls.style.width = style_width;
 };
 
+_p4d_proto.checkCustomStart = function() {
+  if (P4WN_CUSTOM_START != null) {
+    p4_fen2state(P4WN_CUSTOM_START, this.board_state);
+    this.refresh_buttons();
+  }
+};
+
+_p4d_proto.animateMoves = function(moves) {
+  if (moves != null && moves[0] != null && moves[0].length == 2) {
+    var callback = function(){this.refresh();}.bind(this);
+    for (var i = moves.length - 1; i >= 0; i--) {
+      var callback = (function (index, callback) {
+        return function() {this.animateMove(moves[index][0], moves[index][1], callback);}.bind(this);
+      }.bind(this))(i, callback);
+    }
+    callback();
+  }
+};
+
+_p4d_proto.animateMove = function(start, target, callback) {
+  var canvas = this.elements.boardCanvas;
+  var chessboard = canvas.chessboard;
+  var fields = chessboard.fields;
+  var startField = null;
+  var targetField = null;
+  var stepsPerField = 50;
+  var timePerStep = 10;
+  for (var i = 0; i < fields.length; i++) {
+    for (var j = 0; j < 8; j++) {
+      if (fields[i][j].boardID == start) {
+        startField = fields[i][j];
+      }
+      if (fields[i][j].boardID == target) {
+        targetField = fields[i][j];
+      }
+    }
+  }
+  if (startField != null && targetField != null && startField != targetField
+    && startField.piece != null) {
+    var animatedPiece = startField.piece;
+    canvas.draggedPiece = animatedPiece;
+    var fieldDistanceX = Math.abs(startField.idX - targetField.idX);
+    var fieldDistanceY = Math.abs(startField.idY - targetField.idY);
+    var stepsX = fieldDistanceX * stepsPerField;
+    var stepsY = fieldDistanceY * stepsPerField;
+    var totalSteps = Math.max(stepsX, stepsY);
+    var canvasDistanceX = Math.abs((startField.posX + (startField.size * 0.1)) - (targetField.posX + (targetField.size * 0.1)));
+    var canvasDistanceY = Math.abs((startField.posY + (startField.size * 0.1)) - (targetField.posY + (targetField.size * 0.1)));
+    var canvasDistancePerStepX = canvasDistanceX / totalSteps;
+    if (startField.posX > targetField.posX) {
+      canvasDistancePerStepX = canvasDistancePerStepX * -1;
+    }
+    var canvasDistancePerStepY = canvasDistanceY / totalSteps;
+    if (startField.posY > targetField.posY) {
+      canvasDistancePerStepY = canvasDistancePerStepY * -1;
+    }
+    for (var i = 0; i < totalSteps; i++) {
+      window.setTimeout(function() {
+        var pieceNewPosX = animatedPiece.posX + canvasDistancePerStepX;
+        var pieceNewPosY = animatedPiece.posY + canvasDistancePerStepY;
+        animatedPiece.setPosition(pieceNewPosX, pieceNewPosY);
+        chessboard.draw();
+      }, (i+1) * timePerStep);
+    }
+    window.setTimeout(function() {
+      canvas.draggedPiece = null;
+      if (callback != undefined && callback != null) {
+        callback();
+      }
+    }, (totalSteps * timePerStep) * 1.05);
+    return totalSteps * timePerStep;
+  }
+};
+
+_p4d_proto.convertBoardNotation = function(p4wnFieldID) {
+  var id = p4wnFieldID - 10;
+  var idY = Math.floor(id / 10);
+  var idX = id - (idY*10);
+  var fieldID = "";
+  switch (idX) {
+    case 1: fieldID = "a"; break;
+    case 2: fieldID = "b"; break;
+    case 3: fieldID = "c"; break;
+    case 4: fieldID = "d"; break;
+    case 5: fieldID = "e"; break;
+    case 6: fieldID = "f"; break;
+    case 7: fieldID = "g"; break;
+    case 8: fieldID = "h"; break;
+  }
+  fieldID += idY;
+  return fieldID;
+};
+
 function p4wnify(id) {
   var p4d = new P4wn_display(id);
   p4d.render_elements();
   p4d.write_board_html();
   p4d.write_controls_html(P4WN_CONTROLS);
   p4d.interpret_query_string();
+  p4d.checkCustomStart();
   p4d.refresh();
   return p4d;
 }
 
 P4wn_display.prototype = _p4d_proto;
 
-function mouseDownListenerStart(event, p4d, mouseDownFunctionStart) {
-  var canvas = p4d.elements.boardCanvas;
+function mouseDownListenerStart(evt) {
+  var canvas = this.elements.boardCanvas;
   var board = canvas.chessboard;
 
   var bRect = canvas.getBoundingClientRect();
-  mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
-  mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+  mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+  mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
   for (var i = 0; i < board.pieces.length; i++) {
     var piece = board.pieces[i];
@@ -503,26 +594,24 @@ function mouseDownListenerStart(event, p4d, mouseDownFunctionStart) {
   }
 
   if (canvas.dragging) {
-    var mouseMoveListenerThis = function(evt) {
-      mouseMoveListener(evt, p4d);
-    };
-    var mouseUpListenerTargetThis = function(evt) {
-      mouseUpListenerTarget(evt, p4d, mouseUpListenerTargetThis, mouseMoveListenerThis);
-    };
-    window.addEventListener("mousemove", mouseMoveListenerThis, false);
-    canvas.removeEventListener("mousedown", mouseDownFunctionStart, false);
-    window.addEventListener("mouseup", mouseUpListenerTargetThis, false);
+    var interactionListener = canvas.interactionListener;
+    interactionListener.moveListener = mouseMoveListener.bind(this);
+    window.addEventListener("mousemove", interactionListener.moveListener, false);
+    canvas.removeEventListener("mousedown", interactionListener.startListener, false);
+    interactionListener.startListener = null;
+    interactionListener.targetListener = mouseUpListenerTarget.bind(this);
+    window.addEventListener("mouseup", interactionListener.targetListener, false);
   }
   return false;
 }
 
-function mouseUpListenerStart(event, p4d, mouseUpFunctionStart) {
-  var canvas = p4d.elements.boardCanvas;
+function mouseUpListenerStart(evt) {
+  var canvas = this.elements.boardCanvas;
   var board = canvas.chessboard;
 
   var bRect = canvas.getBoundingClientRect();
-  mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
-  mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+  mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+  mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
   for (var i = 0; i < board.pieces.length; i++) {
     var piece = board.pieces[i];
@@ -535,23 +624,20 @@ function mouseUpListenerStart(event, p4d, mouseUpFunctionStart) {
     }
   }
   if (canvas.dragging) {
-    var mouseMoveListenerThis = function(evt) {
-      mouseMoveListener(evt, p4d);
-    };
-    var mouseUpListenerTargetThis = function(evt) {
-      mouseUpListenerTarget(evt, p4d, mouseUpListenerTargetThis, mouseMoveListenerThis);
-    };
-
-    window.addEventListener("mousemove", mouseMoveListenerThis, false);
-    canvas.removeEventListener("mouseup", mouseUpFunctionStart, false);
-    canvas.startEvent = event;
-    window.addEventListener("mouseup", mouseUpListenerTargetThis, false);
+    var interactionListener = canvas.interactionListener;
+    interactionListener.moveListener = mouseMoveListener.bind(this);
+    window.addEventListener("mousemove", interactionListener.moveListener, false);
+    canvas.removeEventListener("mouseup", interactionListener.startListener, false);
+    interactionListener.startListener = null;
+    interactionListener.targetListener = mouseUpListenerTarget.bind(this);
+    canvas.startEvent = evt;
+    window.addEventListener("mouseup", interactionListener.targetListener, false);
   }
   return false;
 }
 
-function mouseMoveListener(event, p4d) {
-  var canvas = p4d.elements.boardCanvas;
+function mouseMoveListener(evt) {
+  var canvas = this.elements.boardCanvas;
   var posX;
   var posY;
   var shapeRad = canvas.draggedPiece.size;
@@ -561,8 +647,8 @@ function mouseMoveListener(event, p4d) {
   var maxY = canvas.height - shapeRad;
   //getting mouse position correctly
   var bRect = canvas.getBoundingClientRect();
-  mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
-  mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+  mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+  mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
   //clamp x and y positions to prevent object from dragging outside of canvas
   posX = mouseX - canvas.dragHoldX;
@@ -576,9 +662,9 @@ function mouseMoveListener(event, p4d) {
   canvas.chessboard.draw();
 }
 
-function mouseUpListenerTarget(event, p4d, mouseUpFunctionTarget, mouseMoveFunction) {
-  var canvas = p4d.elements.boardCanvas;
-  if (canvas.startEvent != event) {
+function mouseUpListenerTarget(evt) {
+  var canvas = this.elements.boardCanvas;
+  if (canvas.startEvent != evt) {
     var piece = canvas.draggedPiece;
     var startField = null;
     var targetField = null;
@@ -586,8 +672,8 @@ function mouseUpListenerTarget(event, p4d, mouseUpFunctionTarget, mouseMoveFunct
       for (var j = 0; j < 8; j++) {
         var currentField = canvas.chessboard.fields[i][j];
         var bRect = canvas.getBoundingClientRect();
-        mouseX = (event.clientX - bRect.left)*(canvas.width/bRect.width);
-        mouseY = (event.clientY - bRect.top)*(canvas.height/bRect.height);
+        mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
+        mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
         if (currentField.piece == piece) {
           startField = currentField;
@@ -599,23 +685,26 @@ function mouseUpListenerTarget(event, p4d, mouseUpFunctionTarget, mouseMoveFunct
       }
     }
     if (targetField != null) {
-      window.removeEventListener("mousemove", mouseMoveFunction, false);
-      window.removeEventListener("mouseup", mouseUpFunctionTarget, false);
+      var interactionListener = canvas.interactionListener;
+      window.removeEventListener("mousemove", interactionListener.moveListener, false);
+      interactionListener.moveListener = null;
+      window.removeEventListener("mouseup", interactionListener.targetListener, false);
+      interactionListener.targetListener = null;
       if (P4WN_INTERACTION_STYLE == 1) {
-        var mouseDownListenerStartThis = function(evt) {
-          mouseDownListenerStart(evt, p4d, mouseDownListenerStartThis);
-        };
-        canvas.addEventListener("mousedown", mouseDownListenerStartThis, false);
+        interactionListener.startListener = mouseDownListenerStart.bind(this);
+        canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
       } else if (P4WN_INTERACTION_STYLE == 2) {
-        var mouseUpListenerStartThis = function(evt) {
-          mouseUpListenerStart(evt, p4d, mouseUpListenerStartThis);
-        };
-        canvas.addEventListener("mouseup", mouseUpListenerStartThis, false);
+        interactionListener.startListener = mouseUpListenerStart.bind(this);
+        canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
       }
-      p4d.move(startField.outputID, targetField.outputID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
+      var move_result = this.move(startField.boardID, targetField.boardID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
+      if (!move_result.ok) {
+        startField.setPiece(canvas.draggedPiece);
+      }
       canvas.dragging = false;
       canvas.draggedPiece = null;
-      p4d.refresh();
+      this.refresh();
     }
+
   }
 }

@@ -15,7 +15,7 @@ Chessboard.prototype.create = function() {
       var field = new Field(this.canvas);
       this.fields[i].push(field);
       var fieldID = this.getLetterOfID(j+1) + (i+1);
-      field.setOutputID(fieldID);
+      field.setBoardID(fieldID);
       field.setID(j+1, i+1);
       field.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*P4WN_SQUARE_WIDTH),
         P4WN_BOARD_OFFSET_TOP+((7-i)*P4WN_SQUARE_HEIGHT));
@@ -25,6 +25,7 @@ Chessboard.prototype.create = function() {
         field.setColor("Ivory");
       }
 
+      /*
       if (i < 2 || i > 5) {
         var piece = null;
         if (i == 0) {
@@ -71,6 +72,7 @@ Chessboard.prototype.create = function() {
         this.pieces.push(piece);
         field.setPiece(piece);
       }
+      */
     }
   }
   this.draw();
@@ -155,26 +157,13 @@ Chessboard.prototype.draw = function() {
   }
 };
 
-Chessboard.prototype.convertNotation = function(p4wnFieldID) {
-  var id = p4wnFieldID - 10;
-  var idY = Math.floor(id / 10);
-  var idX = id - (idY*10);
-  var fieldID = "";
-  switch (idX) {
-    case 1: fieldID = "a"; break;
-    case 2: fieldID = "b"; break;
-    case 3: fieldID = "c"; break;
-    case 4: fieldID = "d"; break;
-    case 5: fieldID = "e"; break;
-    case 6: fieldID = "f"; break;
-    case 7: fieldID = "g"; break;
-    case 8: fieldID = "h"; break;
-  }
-  fieldID += idY;
-  return this.fields[7-(idY-1)][idX-1];
-};
-
 Chessboard.prototype.loadBoard = function(board_state) {
+  /*
+  // Prevent deleted pieces from loading their images and drawing to the canvas
+  for (var i = 0; i < this.pieces.length; i++) {
+    this.pieces[i].image.onload = null;
+  }
+  */
   this.pieces = new Array();
   for (var i = 0; i < 8; i++) {
     for (var j = 0; j < 8; j++) {
@@ -197,8 +186,8 @@ Chessboard.prototype.loadBoard = function(board_state) {
         default: break;
       }
       if (currentPiece != null) {
-        currentPiece.loadImage();
         this.pieces.push(currentPiece);
+        currentPiece.loadImage();
         this.fields[i][j].setPiece(currentPiece);
       }
     }

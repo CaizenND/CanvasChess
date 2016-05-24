@@ -1,7 +1,7 @@
 function Field(canvas) {
   this.canvas = canvas;
   this.piece = null;
-  this.outputID = "";
+  this.boardID = "";
   this.idX = 0;
   this.idY = 0;
   this.posX = 0;
@@ -19,8 +19,8 @@ Field.prototype.setPiece = function(piece) {
     }
 };
 
-Field.prototype.setOutputID = function(fieldID) {
-  this.outputID = fieldID;
+Field.prototype.setBoardID = function(fieldID) {
+  this.boardID = fieldID;
 };
 
 Field.prototype.setID = function(x, y) {
