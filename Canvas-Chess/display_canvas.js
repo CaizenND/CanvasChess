@@ -1,3 +1,7 @@
+//BoardState = Engine --> Überall wo engine benutzt wird muss unser Interface genutzt werden 
+
+//Aufteilen in Teil für Chessboard(Felix) und teil für interface(Nils)
+
 
 /* This code is based on p4wn, AKA 5k chess
  * by Douglas Bagnall <douglas@paradise.net.nz>
@@ -66,6 +70,7 @@ function _event_target(e) {
 
 _p4d_proto.move = function(start, end, promotion) {
     var state = this.board_state;
+	//Unsere interface Move Methode
     var move_result = state.move(start, end, promotion);
     if (move_result.ok) {
         this.display_move_text(state.moveno, move_result.string);
@@ -93,6 +98,7 @@ _p4d_proto.next_move = function()  {
   this.auto_play_timeout === undefined) {
     var timeout = (this.players[1 - mover] == 'computer') ? 500: 10;
     var p4d = this;
+	//Unser Computer Move
     this.auto_play_timeout = window.setTimeout(function() {p4d.computer_move();},
       timeout);
   }
@@ -443,6 +449,7 @@ function P4wn_display(target) {
   this.elements.controls = p4d_new_child(container, "div", P4WN_CONTROLS_CLASS);
   this.start = 0;
   this.draw_offers = 0;
+  //Unser init, Wenn boardState bei uns engine heißt ist es vermutlich eindeutiger zu verstehen 
   this.board_state = p4_new_game();
   this.players = ['human', 'computer']; //[white, black] controllers
   this.pawn_becomes = 0; //index into P4WN_PROMOTION_* arrays
@@ -562,6 +569,7 @@ _p4d_proto.convertBoardNotation = function(p4wnFieldID) {
 };
 
 function p4wnify(id) {
+	//p4d quasi unser Schachspiel-->umbennen in chessGame oder so? 
   var p4d = new P4wn_display(id);
   p4d.render_elements();
   p4d.write_board_html();

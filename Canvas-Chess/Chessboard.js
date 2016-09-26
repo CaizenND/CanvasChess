@@ -2,6 +2,7 @@ function Chessboard(canvas) {
   this.canvas = canvas;
   this.fields = [];
   this.pieces = [];
+  // Weiß oben oder unten? 
   this.orientation = 0;
 }
 
