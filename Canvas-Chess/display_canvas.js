@@ -1,4 +1,4 @@
-//BoardState = Engine --> Überall wo engine benutzt wird muss unser Interface genutzt werden 
+//BoardState = Engine --> Überall wo engine benutzt wird muss unser Interface genutzt werden
 
 //Aufteilen in Teil für Chessboard(Felix) und teil für interface(Nils)
 
@@ -69,6 +69,8 @@ function _event_target(e) {
 }
 
 _p4d_proto.move = function(start, end, promotion) {
+  // engine_interface.move(start, end)
+  // TODO: Kümmern wir uns um die Promotion oder die Engine?
     var state = this.board_state;
 	//Unsere interface Move Methode
     var move_result = state.move(start, end, promotion);
@@ -93,6 +95,8 @@ _p4d_proto.move = function(start, end, promotion) {
 };
 
 _p4d_proto.next_move = function()  {
+  // var nextColor = engineInterface.whosTurn();
+  // var mover = (nextColor == "black") ? 1 : 0;
   var mover = this.board_state.to_play;
   if (this.players[mover] == 'computer' &&
   this.auto_play_timeout === undefined) {
@@ -106,6 +110,7 @@ _p4d_proto.next_move = function()  {
 
 _p4d_proto.computer_move = function() {
     this.auto_play_timeout = undefined;
+    // var move = engineInterface.computerMove();
     var state = this.board_state;
     var mv;
     var depth = this.computer_level + 1;
@@ -113,6 +118,7 @@ _p4d_proto.computer_move = function() {
     mv = state.findmove(depth);
     var delta = Date.now() - start_time;
     p4_log("findmove took", delta);
+  	//p4wn kann anscheinend adaptive die Suchtiefe erhöhen, lass ich erstmal raus
     if (P4WN_ADAPTIVE_LEVELS && depth > 2) {
         var min_time = 25 * depth;
         while (delta < min_time) {
@@ -124,6 +130,8 @@ _p4d_proto.computer_move = function() {
     }
     var start = this.convertBoardNotation(mv[0]);
     var target = this.convertBoardNotation(mv[1]);
+  // var timeout = this.animateMove(move.start, move.target,
+  // function() {engineInterface.move(move.start, move.target);}.bind(this));
     var timeout = this.animateMove(start, target,
       function() {this.move(mv[0], mv[1]);}.bind(this));
 };
@@ -166,6 +174,7 @@ _p4d_proto.goto_move = function(n) {
     if (delta > this.board_state.moveno) {
       delta = this.board_state.moveno;
     }
+    // engineInterface.gotoMove(n);
     var div = this.elements.log;
     for (var i = 0; i < delta; i++) {
         div.removeChild(div.lastChild);
@@ -176,6 +185,7 @@ _p4d_proto.goto_move = function(n) {
 };
 
 _p4d_proto.refresh = function() {
+  //this.elements.boardCanvas.chessboard.loadBoard(engineInterface.getBoard);
   this.elements.boardCanvas.chessboard.loadBoard(this.board_state);
 };
 
@@ -449,7 +459,8 @@ function P4wn_display(target) {
   this.elements.controls = p4d_new_child(container, "div", P4WN_CONTROLS_CLASS);
   this.start = 0;
   this.draw_offers = 0;
-  //Unser init, Wenn boardState bei uns engine heißt ist es vermutlich eindeutiger zu verstehen 
+  //Unser init, Wenn boardState bei uns engine heißt ist es vermutlich eindeutiger zu verstehen
+  // engine_interface.init("");
   this.board_state = p4_new_game();
   this.players = ['human', 'computer']; //[white, black] controllers
   this.pawn_becomes = 0; //index into P4WN_PROMOTION_* arrays
@@ -477,6 +488,7 @@ _p4d_proto.render_elements = function() {
 
 _p4d_proto.checkCustomStart = function() {
   if (P4WN_CUSTOM_START != null) {
+    // engine_interface.init(P4WN_CUSTOM_START);
     p4_fen2state(P4WN_CUSTOM_START, this.board_state);
     this.refresh_buttons();
   }
@@ -549,6 +561,7 @@ _p4d_proto.animateMove = function(start, target, callback) {
   }
 };
 
+// TODO: kann raus
 _p4d_proto.convertBoardNotation = function(p4wnFieldID) {
   var id = p4wnFieldID - 10;
   var idY = Math.floor(id / 10);
@@ -569,7 +582,7 @@ _p4d_proto.convertBoardNotation = function(p4wnFieldID) {
 };
 
 function p4wnify(id) {
-	//p4d quasi unser Schachspiel-->umbennen in chessGame oder so? 
+	//p4d quasi unser Schachspiel-->umbennen in chessGame oder so?
   var p4d = new P4wn_display(id);
   p4d.render_elements();
   p4d.write_board_html();
