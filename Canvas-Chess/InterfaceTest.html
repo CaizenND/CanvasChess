@@ -1,0 +1,42 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="p4wn.css" />
+</head>
+<body>
+
+<script src="engine.js"></script>
+<script src="engine_interface.js"></script>
+
+<script>
+var ei = new EngineInterface();
+var initString = "";
+console.log("Initializing p4wn with: " + initString);
+ei.init(initString);
+console.log(ei.getBoard());
+console.log("To move: " + ei.whosTurn());
+console.log("Moving f2 to f4");
+ei.move("f2","f4");
+console.log(ei.getBoard());
+console.log("To move: " + ei.whosTurn());
+console.log("Calculating computer move");
+var move = ei.computerMove();
+console.log("Moving " + move.start + " to " + move.target);
+ei.move(move.start, move.target);
+console.log(ei.getBoard());
+console.log("To move: " + ei.whosTurn());
+console.log("Returning to move 1")
+ei.gotoMove(1);
+console.log(ei.getBoard());
+console.log("To move: " + ei.whosTurn());
+console.log(ei.isGameOver());
+var initString = "5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10";
+console.log("Initializing p4wn with: " + initString);
+ei.init(initString);
+console.log("Moving a2 to a3");
+ei.move("a2","a3");
+console.log(ei.isGameOver());
+</script>
+
+</body>
+</html>
