@@ -2,7 +2,7 @@ function Chessboard(canvas) {
   this.canvas = canvas;
   this.fields = [];
   this.pieces = [];
-  // Weiß oben oder unten? 
+  // Weiß oben oder unten?
   this.orientation = 0;
 }
 
@@ -169,9 +169,9 @@ Chessboard.prototype.loadBoard = function(board_state) {
   for (var i = 0; i < 8; i++) {
     for (var j = 0; j < 8; j++) {
       this.fields[i][j].setPiece(null);
-      var index = 20 + (i*10) + (j+1);
+      //var index = 20 + (i*10) + (j+1);
       var currentPiece = null;
-      switch (board_state.board[index]) {
+      switch (board_state[i][j]) {
         case 2: currentPiece = new Piece("white", "pawn", this.canvas); break;
         case 3: currentPiece = new Piece("black", "pawn", this.canvas); break;
         case 4: currentPiece = new Piece("white", "rook", this.canvas); break;

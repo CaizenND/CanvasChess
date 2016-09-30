@@ -7,27 +7,50 @@
 
 <script src="engine.js"></script>
 <script src="engine_interface.js"></script>
+<script src="Chessboard.js"></script>
+<script src="display_canvas.js"></script>
+<script src="Field.js"></script>
+<script src="Piece.js"></script>
 
+<canvas id="myCanvas"></canvas>
 <script>
+var canvas = document.getElementById("myCanvas");
+canvas.height = P4WN_BOARD_OFFSET_TOP + (8*P4WN_SQUARE_HEIGHT);
+canvas.width = P4WN_BOARD_OFFSET_LEFT + (8*P4WN_SQUARE_WIDTH);
+var chessboard = new Chessboard(canvas);
+chessboard.create();
+
 var ei = new EngineInterface();
 var initString = "";
 console.log("Initializing p4wn with: " + initString);
 ei.init(initString);
 console.log(ei.getBoard());
+
+//chessboard.loadBoard(ei.getBoard());
+
 console.log("To move: " + ei.whosTurn());
 console.log("Moving f2 to f4");
 ei.move("f2","f4");
 console.log(ei.getBoard());
+
+//chessboard.loadBoard(ei.getBoard());
+
 console.log("To move: " + ei.whosTurn());
 console.log("Calculating computer move");
 var move = ei.computerMove();
 console.log("Moving " + move.start + " to " + move.target);
 ei.move(move.start, move.target);
 console.log(ei.getBoard());
+
+//chessboard.loadBoard(ei.getBoard());
+
 console.log("To move: " + ei.whosTurn());
 console.log("Returning to move 1")
-ei.gotoMove(1);
+ei.goToMove(1);
 console.log(ei.getBoard());
+
+//chessboard.loadBoard(ei.getBoard());
+
 console.log("To move: " + ei.whosTurn());
 console.log(ei.isGameOver());
 var initString = "5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10";
@@ -35,6 +58,10 @@ console.log("Initializing p4wn with: " + initString);
 ei.init(initString);
 console.log("Moving a2 to a3");
 ei.move("a2","a3");
+console.log(ei.getBoard());
+
+chessboard.loadBoard(ei.getBoard());
+
 console.log(ei.isGameOver());
 </script>
 
