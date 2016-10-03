@@ -26,14 +26,14 @@ console.log("Initializing p4wn with: " + initString);
 ei.init(initString);
 console.log(ei.getBoard());
 
-//chessboard.loadBoard(ei.getBoard());
+chessboard.loadBoard(ei.getBoard());
 
 console.log("To move: " + ei.whosTurn());
 console.log("Moving f2 to f4");
 ei.move("f2","f4");
 console.log(ei.getBoard());
 
-//chessboard.loadBoard(ei.getBoard());
+chessboard.loadBoard(ei.getBoard());
 
 console.log("To move: " + ei.whosTurn());
 console.log("Calculating computer move");
@@ -42,14 +42,14 @@ console.log("Moving " + move.start + " to " + move.target);
 ei.move(move.start, move.target);
 console.log(ei.getBoard());
 
-//chessboard.loadBoard(ei.getBoard());
+chessboard.loadBoard(ei.getBoard());
 
 console.log("To move: " + ei.whosTurn());
 console.log("Returning to move 1")
 ei.goToMove(1);
 console.log(ei.getBoard());
 
-//chessboard.loadBoard(ei.getBoard());
+chessboard.loadBoard(ei.getBoard());
 
 console.log("To move: " + ei.whosTurn());
 console.log(ei.isGameOver());

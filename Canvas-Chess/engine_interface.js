@@ -25,9 +25,9 @@ var EngineInterface = (function() {
 
 	PublicInterface.move = function(start, target) {
 		var move_result = engine.move(start, target, P4WN_PROMOTION_INTS[pawn_promotion]);
-		if (move_result.flags & P4_MOVE_CHECKMATE) {
+		if (move_result.flags == P4_MOVE_CHECKMATE) {
 			mate = true;
-		} else if (move_result.flags & P4_MOVE_STALEMATE) {
+		} else if (move_result.flags == P4_MOVE_STALEMATE) {
 			stale = true;
 		}
 		if (move_result.ok) {

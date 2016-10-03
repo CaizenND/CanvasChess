@@ -2,14 +2,13 @@
 //TODO: Aufteilen in Front End, Chessboard und Listener + Benennung anpassen
 
 // Übernommen
-var P4WN_SQUARE_HEIGHT = 40;
-var P4WN_SQUARE_WIDTH = P4WN_SQUARE_HEIGHT;
+var SQUARE_SIZE = 40;
 
 var P4WN_CUSTOM_START = null;
 
 // Muss keine Konstante sein (Wo ABC/1,2,3 steht wie breit das sein soll)
-var P4WN_BOARD_OFFSET_TOP = P4WN_SQUARE_HEIGHT*0.8;
-var P4WN_BOARD_OFFSET_LEFT = P4WN_SQUARE_WIDTH*0.8;
+var P4WN_BOARD_OFFSET_TOP = SQUARE_SIZE*0.8;
+var P4WN_BOARD_OFFSET_LEFT = SQUARE_SIZE*0.8;
 
 //Klicken und zeihen oder einmal klicken und dann nochmal klicken zum absetzen
 var P4WN_INTERACTION_STYLE = 2;
@@ -36,8 +35,8 @@ P4wn_display.prototype = _p4d_proto;
 //Stellt Größe ein. Für das Canvas muss was davon rüber
 _p4d_proto.render_elements = function() {
   var e = this.elements;
-  var height = P4WN_BOARD_OFFSET_TOP + (8*P4WN_SQUARE_HEIGHT);
-  var width = P4WN_BOARD_OFFSET_LEFT + (8*P4WN_SQUARE_WIDTH);
+  var height = P4WN_BOARD_OFFSET_TOP + (8*SQUARE_SIZE);
+  var width = P4WN_BOARD_OFFSET_LEFT + (8*SQUARE_SIZE);
   var style_height = height + 'px';
   var style_width = width + 'px';
   e.inner.style.height = style_height;
@@ -62,11 +61,12 @@ Chessboard.prototype.create = function() {
     for (var j = 0; j < 8; j++) {
       var field = new Field(this.canvas);
       this.fields[i].push(field);
-      var fieldID = this.getLetterOfID(j+1) + (i+1);
-      field.setBoardID(fieldID);
+      var algebraicID = this.getLetterOfID(j+1) + (i+1);
+      field.setAlgebraicID(algebraicID);
       field.setID(j+1, i+1);
-      field.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*P4WN_SQUARE_WIDTH),
-        P4WN_BOARD_OFFSET_TOP+((7-i)*P4WN_SQUARE_HEIGHT));
+      field.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*SQUARE_SIZE),
+        P4WN_BOARD_OFFSET_TOP+((7-i)*SQUARE_SIZE));
+      field.setSize(SQUARE_SIZE);
       if ((i+j)%2 == 1) {
         field.setColor("BurlyWood");
       } else {
@@ -99,11 +99,11 @@ Chessboard.prototype.switchPositions = function(orientation) {
     for (var j = 0; j < 8; j++) {
       var currentField = this.fields[i][j];
       if (this.orientation == 0) {
-        currentField.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*P4WN_SQUARE_WIDTH),
-        P4WN_BOARD_OFFSET_TOP+((7-i)*P4WN_SQUARE_HEIGHT));
+        currentField.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*SQUARE_SIZE),
+        P4WN_BOARD_OFFSET_TOP+((7-i)*SQUARE_SIZE));
       } else {
-        currentField.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*P4WN_SQUARE_WIDTH),
-        P4WN_BOARD_OFFSET_TOP+(i*P4WN_SQUARE_HEIGHT));
+        currentField.setPosition(P4WN_BOARD_OFFSET_LEFT+(j*SQUARE_SIZE),
+        P4WN_BOARD_OFFSET_TOP+(i*SQUARE_SIZE));
       }
     }
   }
@@ -115,7 +115,7 @@ Chessboard.prototype.draw = function() {
   ctx.fillStyle = "White";
   ctx.fillRect(0, 0, 40+8*60, 40+8*60);
   ctx.fillStyle = "Black";
-  var fontSize = Math.min(P4WN_SQUARE_HEIGHT*0.5, P4WN_BOARD_OFFSET_TOP*0.8);
+  var fontSize = Math.min(SQUARE_SIZE*0.5, P4WN_BOARD_OFFSET_TOP*0.8);
   ctx.font = fontSize + "px Arial";
   ctx.textBaseline = "top";
   var text = "";
@@ -126,9 +126,9 @@ Chessboard.prototype.draw = function() {
       if (i == 0) {
         text = this.getLetterOfID(j+1);
         textPaddingTop = (P4WN_BOARD_OFFSET_TOP-fontSize)*0.5;
-        textPaddingLeft = (P4WN_SQUARE_WIDTH-ctx.measureText(text).width)*0.5;
+        textPaddingLeft = (SQUARE_SIZE-ctx.measureText(text).width)*0.5;
         ctx.fillText(text,
-          P4WN_BOARD_OFFSET_LEFT+(j*P4WN_SQUARE_WIDTH)+textPaddingLeft,
+          P4WN_BOARD_OFFSET_LEFT+(j*SQUARE_SIZE)+textPaddingLeft,
           textPaddingTop);
       }
       if (j == 0) {
@@ -137,10 +137,10 @@ Chessboard.prototype.draw = function() {
         } else {
           text = i+1;
         }
-        textPaddingTop = (P4WN_SQUARE_HEIGHT-fontSize)*0.5;
+        textPaddingTop = (SQUARE_SIZE-fontSize)*0.5;
         textPaddingLeft = (P4WN_BOARD_OFFSET_LEFT-ctx.measureText(text).width)*0.5;
         ctx.fillText(text, textPaddingLeft,
-          P4WN_BOARD_OFFSET_TOP+(i*P4WN_SQUARE_HEIGHT)+textPaddingTop);
+          P4WN_BOARD_OFFSET_TOP+(i*SQUARE_SIZE)+textPaddingTop);
       }
       this.fields[i][j].draw();
     }
@@ -157,12 +157,10 @@ Chessboard.prototype.draw = function() {
 };
 
 Chessboard.prototype.loadBoard = function(board_state) {
-  /*
   // Prevent deleted pieces from loading their images and drawing to the canvas
   for (var i = 0; i < this.pieces.length; i++) {
     this.pieces[i].image.onload = null;
   }
-  */
 
   this.pieces = new Array();
   for (var i = 0; i < 8; i++) {
@@ -273,40 +271,39 @@ function p4d_new_child(element, childtag, className) {
 
 //Auto play timeout verzögert die Züge des Computers, da sonst bei Comp vs. Comp Spielen die Spiele quasi direkt zuende wären, weil es so schnell geht.
 _p4d_proto.next_move = function()  {
-  console.log("in");
   var nextColor = engineInterface.whosTurn();
   var mover = (nextColor == "black") ? 1 : 0;
   if (this.players[mover] == 'computer' &&
   this.auto_play_timeout === undefined) {
     var timeout = (this.players[1 - mover] == 'computer') ? 500: 10;
-    var p4d = this;
+    //var p4d = this;
 	  this.auto_play_timeout = window.setTimeout(function() {
-      this.computer_move()}, timeout);
+      this.computer_move()}.bind(this), timeout);
   }
 };
 
 _p4d_proto.computer_move = function() {
   this.auto_play_timeout = undefined;
   var move = engineInterface.computerMove();
-
   var timeout = this.animateMove(move.start, move.target,
-  function() {engineInterface.move(move.start, move.target);}.bind(this));
+    function() {
+      engineInterface.move(move.start, move.target);
+      this.refresh();
+    }.bind(this));
 };
 
 //TODO: Promotion in engine setzen ==> Parameter/Konstante promotion in chessboard entfernen
 _p4d_proto.move = function(start, end, promotion) {
   var moveResult = engineInterface.move(start, end);
-  console.log(moveResult);
-  console.log(engineInterface.isGameOver());
   if (moveResult && !engineInterface.isGameOver()) {
-            this.next_move_timeout = window.setTimeout(
-                function(p4d) {
-                    return function() {
-                        p4d.next_move();
-                    };
-                }(this), 1);
-        }
-        return moveResult;
+    this.next_move_timeout = window.setTimeout(
+      function(p4d) {
+        return function() {
+          p4d.next_move();
+        };
+      }(this), 1);
+  }
+  return moveResult;
 };
 
 //Nur fürs animieren mehrerer moves (auf einmal)
@@ -332,10 +329,10 @@ _p4d_proto.animateMove = function(start, target, callback) {
   var timePerStep = 10;
   for (var i = 0; i < fields.length; i++) {
     for (var j = 0; j < 8; j++) {
-      if (fields[i][j].boardID == start) {
+      if (fields[i][j].algebraicID == start) {
         startField = fields[i][j];
       }
-      if (fields[i][j].boardID == target) {
+      if (fields[i][j].algebraicID == target) {
         targetField = fields[i][j];
       }
     }
@@ -509,7 +506,7 @@ function mouseUpListenerTarget(evt) {
         interactionListener.startListener = mouseUpListenerStart.bind(this);
         canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
       }
-      var moveResult = this.move(startField.boardID, targetField.boardID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
+      var moveResult = this.move(startField.algebraicID, targetField.algebraicID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
       if (!moveResult) {
         startField.setPiece(canvas.draggedPiece);
       }
