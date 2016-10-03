@@ -1,3 +1,6 @@
+//TODO: Promotion Control wieder einfügen
+//TODO: Aufteilen in Front End, Chessboard und Listener + Benennung anpassen
+
 // Übernommen
 var P4WN_SQUARE_HEIGHT = 40;
 var P4WN_SQUARE_WIDTH = P4WN_SQUARE_HEIGHT;
@@ -14,15 +17,6 @@ var P4WN_INTERACTION_STYLE = 2;
 //Ka was mit den Klassen ist muss man an den stellen gucken
 var P4WN_WRAPPER_CLASS = 'p4wn-wrapper';
 var P4WN_BOARD_CLASS = 'p4wn-board';
-var P4WN_MESSAGES_CLASS = 'p4wn-messages';
-var P4WN_LOG_CLASS = 'p4wn-log';
-var P4WN_CONTROLS_CLASS = 'p4wn-controls';
-var P4WN_BLACK_SQUARE = 'p4wn-black-square';
-var P4WN_WHITE_SQUARE = 'p4wn-white-square';
-
-
-//Rotate board ist orientation in chessboard
-var P4WN_ROTATE_BOARD = true;
 
 //Sind nur 0,1,2,3,4 muss man vllt nicht als Var übernehmen
 var P4WN_LEVELS = ['stupid', 'middling', 'default', 'slow', 'slowest'];
@@ -47,10 +41,8 @@ _p4d_proto.render_elements = function() {
   var style_height = height + 'px';
   var style_width = width + 'px';
   e.inner.style.height = style_height;
-  //e.log.style.height = style_height;
   e.boardCanvas.height = height;
   e.boardCanvas.width = width;
-  //e.controls.style.width = style_width;
 };
 
 function Chessboard(canvas) {
@@ -80,55 +72,6 @@ Chessboard.prototype.create = function() {
       } else {
         field.setColor("Ivory");
       }
-
-      /*
-      if (i < 2 || i > 5) {
-        var piece = null;
-        if (i == 0) {
-          if (j == 0 || j == 7) {
-            piece = new Piece("white", "rook", this.canvas);
-          }
-          if (j == 1 || j == 6) {
-            piece = new Piece("white", "knight", this.canvas);
-          }
-          if (j == 2 || j == 5) {
-            piece = new Piece("white", "bishop", this.canvas);
-          }
-          if (j == 3) {
-            piece = new Piece("white", "queen", this.canvas);
-          }
-          if (j == 4) {
-            piece = new Piece("white", "king", this.canvas);
-          }
-        }
-        if (i == 1) {
-          piece = new Piece("white", "pawn", this.canvas);
-        }
-        if (i == 6) {
-          piece = new Piece("black", "pawn", this.canvas);
-        }
-        if (i == 7) {
-          if (j == 0 || j == 7) {
-            piece = new Piece("black", "rook", this.canvas);
-          }
-          if (j == 1 || j == 6) {
-            piece = new Piece("black", "knight", this.canvas);
-          }
-          if (j == 2 || j == 5) {
-            piece = new Piece("black", "bishop", this.canvas);
-          }
-          if (j == 3) {
-            piece = new Piece("black", "queen", this.canvas);
-          }
-          if (j == 4) {
-            piece = new Piece("black", "king", this.canvas);
-          }
-        }
-        piece.loadImage();
-        this.pieces.push(piece);
-        field.setPiece(piece);
-      }
-      */
     }
   }
   this.draw();
@@ -252,6 +195,7 @@ Chessboard.prototype.loadBoard = function(board_state) {
   this.draw();
 };
 
+//TODO: CustomStart hier als Parameter übergeben anstatt in eigener Methode (unten)
 //Baut div(s) zusammen
 function P4wn_display(target) {
   if (! this instanceof P4wn_display) {
@@ -287,6 +231,7 @@ function P4wn_display(target) {
   return this;
 };
 
+//TODO: Auswahl für Interactionlistener als control
 _p4d_proto.write_board_html = function() {
   var canvas = this.elements.boardCanvas;
   var chessboard = new Chessboard(canvas);
@@ -328,6 +273,7 @@ function p4d_new_child(element, childtag, className) {
 
 //Auto play timeout verzögert die Züge des Computers, da sonst bei Comp vs. Comp Spielen die Spiele quasi direkt zuende wären, weil es so schnell geht.
 _p4d_proto.next_move = function()  {
+  console.log("in");
   var nextColor = engineInterface.whosTurn();
   var mover = (nextColor == "black") ? 1 : 0;
   if (this.players[mover] == 'computer' &&
@@ -335,21 +281,35 @@ _p4d_proto.next_move = function()  {
     var timeout = (this.players[1 - mover] == 'computer') ? 500: 10;
     var p4d = this;
 	  this.auto_play_timeout = window.setTimeout(function() {
-      engineInterface.computerMove()}, timeout);
+      this.computer_move()}, timeout);
   }
 };
 
 _p4d_proto.computer_move = function() {
+  this.auto_play_timeout = undefined;
   var move = engineInterface.computerMove();
 
   var timeout = this.animateMove(move.start, move.target,
   function() {engineInterface.move(move.start, move.target);}.bind(this));
 };
 
+//TODO: Promotion in engine setzen ==> Parameter/Konstante promotion in chessboard entfernen
 _p4d_proto.move = function(start, end, promotion) {
-  return engineInterface.move(start, end);
+  var moveResult = engineInterface.move(start, end);
+  console.log(moveResult);
+  console.log(engineInterface.isGameOver());
+  if (moveResult && !engineInterface.isGameOver()) {
+            this.next_move_timeout = window.setTimeout(
+                function(p4d) {
+                    return function() {
+                        p4d.next_move();
+                    };
+                }(this), 1);
+        }
+        return moveResult;
 };
 
+//Nur fürs animieren mehrerer moves (auf einmal)
 _p4d_proto.animateMoves = function(moves) {
   if (moves != null && moves[0] != null && moves[0].length == 2) {
     var callback = function(){this.refresh();}.bind(this);
@@ -549,8 +509,8 @@ function mouseUpListenerTarget(evt) {
         interactionListener.startListener = mouseUpListenerStart.bind(this);
         canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
       }
-      var move_result = this.move(startField.boardID, targetField.boardID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
-      if (!move_result.ok) {
+      var moveResult = this.move(startField.boardID, targetField.boardID, P4WN_PROMOTION_INTS[game.pawn_becomes]);
+      if (!moveResult) {
         startField.setPiece(canvas.draggedPiece);
       }
       canvas.dragging = false;
