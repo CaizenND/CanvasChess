@@ -13,6 +13,8 @@
 
 <script src="engine.js"></script>
 <script src="engine_interface.js"></script>
+<script src="FrontEndListener.js"></script>
+<script src="FrontEnd.js"></script>
 <script src="Chessboard.js"></script>
 <script src="Field.js"></script>
 <script src="Piece.js"></script>
@@ -21,9 +23,10 @@
 <script>
 // ACHTUNG: Zug (letzte Zahl) = 0, sonst kein undo möglich !!!!!!!!!!!
 //Gibt eine vordefinierte Situation vor (https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation):
-//P4WN_CUSTOM_START = "5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10";
-var game = p4wnify("board-goes-here");
-game.next_move();
+//CUSTOM_STATE = "5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10";
+CUSTOM_STATE = null;
+var frontEnd = new FrontEnd("board-goes-here", CUSTOM_STATE);
+//game.nextMove();
 
 //move gibt an was animiert werden soll
 var moves = [["h2", "d4"],["a2", "c5"],["h1", "a8"]];

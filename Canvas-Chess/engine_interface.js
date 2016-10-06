@@ -3,7 +3,7 @@ var EngineInterface = (function() {
 
 	// public Attribute
 	var PublicInterface = {
-
+			PROMOTION_INTS : [P4_QUEEN, P4_ROOK, P4_KNIGHT, P4_BISHOP],
 	}
 
 	// private Attribute
@@ -13,7 +13,6 @@ var EngineInterface = (function() {
 	var mate = false;
 	var stale = false;
 
-	var P4WN_PROMOTION_INTS = [P4_QUEEN, P4_ROOK, P4_KNIGHT, P4_BISHOP];
 
 	// public Methoden
 	PublicInterface.init = function(customState) {
@@ -23,8 +22,18 @@ var EngineInterface = (function() {
 		}
 	}
 
+	PublicInterface.setPawnPromotion = function(pawnPromotion) {
+		if(pawnPromotion >= 0 && pawnPromotion < PublicInterface.PROMOTION_INTS.length) {
+			pawn_promotion = pawnPromotion;
+		}
+	}
+
+	PublicInterface.getPawnPromotion = function() {
+		return pawn_promotion;
+	}
+
 	PublicInterface.move = function(start, target) {
-		var move_result = engine.move(start, target, P4WN_PROMOTION_INTS[pawn_promotion]);
+		var move_result = engine.move(start, target, PublicInterface.PROMOTION_INTS[pawn_promotion]);
 		if (move_result.flags == P4_MOVE_CHECKMATE) {
 			mate = true;
 		} else if (move_result.flags == P4_MOVE_STALEMATE) {
@@ -56,7 +65,7 @@ var EngineInterface = (function() {
 
 	// move wird nur berechnet, nicht durchgeführt
 	PublicInterface.computerMove = function() {
-		var auto_play_timeout = undefined;
+		var autoPlayTimeout = undefined;
 		var mv;
 		var depth = computer_level + 1;
 		//var start_time = Date.now();
