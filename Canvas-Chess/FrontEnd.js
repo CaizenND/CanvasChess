@@ -1,31 +1,28 @@
 var FrontEnd = (function(id, customState) {
-var INNER_DIV = 'inner';
+
 	// public Attribute
 	var PublicInterface = {
     SQUARE_SIZE : 40,
-    // Muss keine Konstante sein (Wo ABC/1,2,3 steht wie breit das sein soll)
     BOARD_OFFSET_TOP : 32,
     BOARD_OFFSET_LEFT : 32,
-
-    //Klicken und ziehen(1) oder einmal klicken und dann nochmal klicken zum absetzen(2)
-    interactionStyle : 2,
-    abc : INNER_DIV,
-
+    interactionStyle : 2,		// Drag & Drop (1), Click - Move - Click (2)
     chessboard : null
 	}
 
 	// private Attribute
   var CUSTOM_STATE = null;
 
+	var ENGINE_INTERFACE = new EngineInterface();
+
+	var INNER_DIV = 'inner';
+
   var BOARD_CANVAS = 'boardCanvas';
+
   var CONTROL_DIV = 'controls';
 
-  //0,1,2,3,4
-  var DEFAULT_COMPUTER_LEVEL = 2;
+  var DEFAULT_COMPUTER_LEVEL = 2; // 0 - 4
 
   var PROMOTION_STRINGS = ['queen', 'rook', 'knight', 'bishop'];
-
-  var ENGINE_INTERFACE = new EngineInterface();
 
   var CONTROLS = [
     { //Promotion
@@ -70,7 +67,9 @@ var INNER_DIV = 'inner';
   var elements = null;
 
   var players = [];
+
   var computer_level = DEFAULT_COMPUTER_LEVEL;
+
   var buttons = {
     elements: [],
     refreshers: []
@@ -79,14 +78,7 @@ var INNER_DIV = 'inner';
   var autoPlayTimeout = undefined;
 
   // public Methoden
-
-  //Zeichnet canvas neu
-  PublicInterface.refresh = function() {
-    PublicInterface.chessboard.loadBoard(ENGINE_INTERFACE.getBoard());
-    refreshButtons();
-  };
-
-  PublicInterface.move = function(start, end) {
+	PublicInterface.move = function(start, end) {
     var moveResult = ENGINE_INTERFACE.move(start, end, ENGINE_INTERFACE.PROMOTION_INTS);
     if (moveResult && !ENGINE_INTERFACE.isGameOver()) {
       this.nextMove_timeout = window.setTimeout(
@@ -99,10 +91,15 @@ var INNER_DIV = 'inner';
     return moveResult;
   };
 
+  PublicInterface.refresh = function() {
+    PublicInterface.chessboard.loadBoard(ENGINE_INTERFACE.getBoard());
+    refreshButtons();
+  };
+
   //private Methoden
 
   //Baut div(s) zusammen
-  var init = function(target) {
+  var initFrontendAndEngine = function(target) {
     var container;
     if (typeof(target) == 'string') {
       container = document.getElementById(target);
@@ -124,7 +121,7 @@ var INNER_DIV = 'inner';
       ENGINE_INTERFACE.init("");
     }
 
-    players = ['human', 'computer']; //[white, black] controllers
+    players = ['human', 'computer']; //[white, black] controllers - 'human','computer'
   };
 
   //Stellt Größe ein. Für das Canvas muss was davon rüber
@@ -141,7 +138,7 @@ var INNER_DIV = 'inner';
     e.boardCanvas.width = width;
   };
 
-  var writeBoardHtml = function() {
+  var initChessboard = function() {
     var canvas = elements.boardCanvas;
     PublicInterface.chessboard = new Chessboard(canvas, PublicInterface);
     PublicInterface.chessboard.create();
@@ -193,7 +190,9 @@ var INNER_DIV = 'inner';
     return child;
   };
 
-  //Auto play timeout verzögert die Züge des Computers, da sonst bei Comp vs. Comp Spielen die Spiele quasi direkt zuende wären, weil es so schnell geht.
+  /* Auto play timeout verzögert die Züge des Computers,
+	da sonst bei Comp vs. Comp Spielen die Spiele quasi direkt zuende wären,
+	weil es so schnell geht. */
   var nextMove = function()  {
     var nextColor = ENGINE_INTERFACE.whosTurn();
     var mover = (nextColor == "black") ? 1 : 0;
@@ -293,9 +292,9 @@ var INNER_DIV = 'inner';
     }
   };
 
-  init(id);
+  initFrontendAndEngine(id);
   renderElements();
-  writeBoardHtml();
+  initChessboard();
   writeControlsHtml(CONTROLS);
   PublicInterface.refresh();
 

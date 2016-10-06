@@ -26,6 +26,7 @@ function mouseDownListenerStart(evt) {
     interactionListener.targetListener = mouseUpListenerTarget.bind(this);
     window.addEventListener("mouseup", interactionListener.targetListener, false);
   }
+
   return false;
 }
 
@@ -47,6 +48,7 @@ function mouseUpListenerStart(evt) {
         canvas.draggedPiece = piece;
     }
   }
+
   if (canvas.dragging) {
     var interactionListener = canvas.interactionListener;
     interactionListener.moveListener = mouseMoveListener.bind(this);
@@ -57,6 +59,7 @@ function mouseUpListenerStart(evt) {
     canvas.startEvent = evt;
     window.addEventListener("mouseup", interactionListener.targetListener, false);
   }
+
   return false;
 }
 
@@ -70,6 +73,7 @@ function mouseMoveListener(evt) {
   var maxX = canvas.width - shapeRad;
   var minY = 0;
   var maxY = canvas.height - shapeRad;
+
   //getting mouse position correctly
   var bRect = canvas.getBoundingClientRect();
   mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
@@ -90,6 +94,7 @@ function mouseMoveListener(evt) {
 function mouseUpListenerTarget(evt) {
   var board = this.chessboard;
   var canvas = board.canvas;
+
   if (canvas.startEvent != evt) {
     var piece = canvas.draggedPiece;
     var startField = null;
@@ -110,6 +115,7 @@ function mouseUpListenerTarget(evt) {
         }
       }
     }
+    
     if (targetField != null) {
       var interactionListener = canvas.interactionListener;
       window.removeEventListener("mousemove", interactionListener.moveListener, false);
@@ -131,6 +137,5 @@ function mouseUpListenerTarget(evt) {
       canvas.draggedPiece = null;
       this.refresh();
     }
-
   }
 }

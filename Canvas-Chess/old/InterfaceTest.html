@@ -15,8 +15,8 @@
 <canvas id="myCanvas"></canvas>
 <script>
 var canvas = document.getElementById("myCanvas");
-canvas.height = P4WN_BOARD_OFFSET_TOP + (8*P4WN_SQUARE_HEIGHT);
-canvas.width = P4WN_BOARD_OFFSET_LEFT + (8*P4WN_SQUARE_WIDTH);
+canvas.height = 32 + (8*40);
+canvas.width = 32 + (8*40);
 var chessboard = new Chessboard(canvas);
 chessboard.create();
 
