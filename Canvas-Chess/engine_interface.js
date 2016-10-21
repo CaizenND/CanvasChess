@@ -133,6 +133,28 @@ var EngineInterface = (function() {
 		stale = false;
 	}
 
+	PublicInterface.getFEN = function() {
+		return p4_state2fen(engine, false);
+	}
+
+	PublicInterface.getMoveHistory = function() {
+		if (engine.moveno != engine.history.length) {
+			console.log("Error: Movenumber and move history inconsistent!");
+			return null;
+		} else {
+			var moves = [];
+			for (var i = 0; i < engine.moveno && i < engine.history.length; i++) {
+				var mv = engine.history[i];
+				var move = {
+					start: convertBoardNotation(mv[0]),
+					target: convertBoardNotation(mv[1])
+				};
+				moves[i] = move;
+			}
+			return moves;
+		}
+	}
+
 	// private Methoden
 	function setComputerLevel(level) {
 		if (level < 5 && level >= 0) {

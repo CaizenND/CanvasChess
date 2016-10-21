@@ -1,19 +1,25 @@
-var FrontEnd = (function(id, customState) {
+var FrontEnd = (function(id, customState, editMode) {
 
 	// public Attribute
 	var PublicInterface = {
-    SQUARE_SIZE : 40,
+    SQUARE_SIZE : 60, // 40
     BOARD_OFFSET_TOP : 32,
     BOARD_OFFSET_LEFT : 32,
+		CANVAS_OFFSET_TOP : 0,
+		CANVAS_OFFSET_LEFT : 0,
     interactionStyle : 2,		// Drag & Drop (1), Click - Move - Click (2)
     chessboard : null
 	}
 
 	// private Attribute
-  var CUSTOM_STATE = null;
+	// TODO: überprüfen ob wirklich alles konstanten sind
+  var CUSTOM_STATE = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 	var ENGINE_INTERFACE = new EngineInterface();
 
+	var boardEditor = null;
+
+	// TODO: umbenennen + "_ID"
 	var INNER_DIV = 'inner';
 
   var BOARD_CANVAS = 'boardCanvas';
@@ -38,25 +44,22 @@ var FrontEnd = (function(id, customState) {
     },
     { //Interaction Style
       onclick_wrap: function(e) {
-          var canvas = PublicInterface.chessboard.canvas;
-          var interactionListener = canvas.interactionListener;
-          canvas.removeEventListener("mousedown", interactionListener.startListener, false);
-          canvas.removeEventListener("mouseup", interactionListener.startListener, false);
-          canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
-          canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
+				deactivateMoveListener();
+        var canvas = elements.boardCanvas;
+        var interactionListener = canvas.interactionListener;
 
-          if(PublicInterface.interactionStyle == 2) {
-            PublicInterface.interactionStyle = 1;
-            canvas.interactionListener.startListener = mouseDownListenerStart.bind(PublicInterface);
-            canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
-          } else {
-            PublicInterface.interactionStyle = 2;
-            canvas.interactionListener.startListener = mouseUpListenerStart.bind(PublicInterface);
-            canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
-          }
+        if(PublicInterface.interactionStyle == 2) {
+          PublicInterface.interactionStyle = 1;
+          canvas.interactionListener.startListener = GameStartListenerDown.bind(PublicInterface);
+          canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
+        } else {
+          PublicInterface.interactionStyle = 2;
+          canvas.interactionListener.startListener = GameStartListenerUp.bind(PublicInterface);
+          canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
+        }
 
-          var eventTarget = (e.currentTarget) ? e.currentTarget : e.srcElement;
-          eventTarget.innerHTML = 'Interaction Style <b>' + PublicInterface.interactionStyle + '</b>';
+        var eventTarget = (e.currentTarget) ? e.currentTarget : e.srcElement;
+        eventTarget.innerHTML = 'Interaction Style <b>' + PublicInterface.interactionStyle + '</b>';
       },
       refresh: function(el) {
           el.innerHTML = 'Interaction Style <b>' + PublicInterface.interactionStyle + '</b>';
@@ -67,6 +70,8 @@ var FrontEnd = (function(id, customState) {
   var elements = null;
 
   var players = [];
+
+	var	active = true;
 
   var computer_level = DEFAULT_COMPUTER_LEVEL;
 
@@ -96,6 +101,41 @@ var FrontEnd = (function(id, customState) {
     refreshButtons();
   };
 
+	PublicInterface.exportGameToXML = function() {
+		var fen = CUSTOM_STATE;
+		if (fen != null) {
+			var xml = "<ChessGame>\n\t<StartingPosition>" + fen + "</StartingPosition>";
+			var history = ENGINE_INTERFACE.getMoveHistory();
+			for (var i = 0; i < history.length; i++) {
+				var move = history[i];
+				xml += "\n\t<Move id=\"" + (i+1) + "\">\n\t\t<Start>" + move.start
+					+ "</Start>\n\t\t<Target>" + move.target + "</Target>\n\t</Move>"
+			}
+			xml += "\n</ChessGame>";
+		}
+		var a = document.getElementById("a");
+  	var file = new Blob([xml], {type: "text/plain"});
+  	window.open(URL.createObjectURL(file));
+	}
+
+	PublicInterface.editorCustomStart = function(editorFEN) {
+		if (editorFEN != null) {
+			CUSTOM_STATE = editorFEN;
+		}
+		ENGINE_INTERFACE.init(CUSTOM_STATE);
+
+		PublicInterface.chessboard.clearCanvas();
+		PublicInterface.CANVAS_OFFSET_LEFT = 2 * PublicInterface.SQUARE_SIZE;
+		var canvas = elements.boardCanvas;
+		canvas.width -= PublicInterface.CANVAS_OFFSET_LEFT;
+		PublicInterface.CANVAS_OFFSET_LEFT = 0;
+		boardEditor = null
+		PublicInterface.chessboard.create();
+		writeControlsHtml(CONTROLS);
+	  PublicInterface.refresh();
+		activateBoard();
+	}
+
   //private Methoden
 
   //Baut div(s) zusammen
@@ -112,14 +152,13 @@ var FrontEnd = (function(id, customState) {
     elements = {};
     elements.inner = inner;
     elements.container = container;
-    var board = elements.boardCanvas = createNewChild(inner, "canvas", BOARD_CANVAS);
+    elements.boardCanvas = createNewChild(inner, "canvas", BOARD_CANVAS);
     elements.controls = createNewChild(container, "div", CONTROL_DIV);
 
-    if (CUSTOM_STATE != null) {
-      ENGINE_INTERFACE.init(CUSTOM_STATE);
-    } else {
-      ENGINE_INTERFACE.init("");
-    }
+		if (customState != null) {
+			CUSTOM_STATE = customState;
+		}
+		ENGINE_INTERFACE.init(CUSTOM_STATE);
 
     players = ['human', 'computer']; //[white, black] controllers - 'human','computer'
   };
@@ -142,17 +181,11 @@ var FrontEnd = (function(id, customState) {
     var canvas = elements.boardCanvas;
     PublicInterface.chessboard = new Chessboard(canvas, PublicInterface);
     PublicInterface.chessboard.create();
+		// TODO: umbenennen in MoveListener?
     canvas.interactionListener = {};
     canvas.interactionListener.startListener = null;
-    canvas.interactionListener.moveListenerListener = null;
+    canvas.interactionListener.moveListener = null;
     canvas.interactionListener.targetListener = null;
-    if (PublicInterface.interactionStyle == 1) {
-      canvas.interactionListener.startListener = mouseDownListenerStart.bind(PublicInterface);
-      canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
-    } else if (PublicInterface.interactionStyle == 2) {
-      canvas.interactionListener.startListener = mouseUpListenerStart.bind(PublicInterface);
-      canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
-    }
   };
 
   var writeControlsHtml = function(lut) {
@@ -163,14 +196,17 @@ var FrontEnd = (function(id, customState) {
       span.className = 'controlButton';
       buttons.elements.push(span);
 
-      addEventListenerIE6Compatibility(span, "click",
-      o.onclick_wrap);
+      addEventListenerIE6Compatibility(span, "click", o.onclick_wrap);
 
       if (o.refresh) {
         buttons.refreshers.push([o.refresh, span]);
       }
     }
     refreshButtons();
+
+		var exportButton = createNewChild(div, "button", "export");
+		exportButton.innerHTML = "Export game as XML"
+		exportButton.onclick = PublicInterface.exportGameToXML;
   };
 
   var refreshButtons = function() {
@@ -181,39 +217,39 @@ var FrontEnd = (function(id, customState) {
     }
   };
 
-  var createNewChild = function(element, childtag, className) {
-    var child = document.createElement(childtag);
-    element.appendChild(child);
-    if (className !== undefined) {
-      child.className = className;
-    }
-    return child;
-  };
-
   /* Auto play timeout verzögert die Züge des Computers,
 	da sonst bei Comp vs. Comp Spielen die Spiele quasi direkt zuende wären,
 	weil es so schnell geht. */
   var nextMove = function()  {
-    var nextColor = ENGINE_INTERFACE.whosTurn();
-    var mover = (nextColor == "black") ? 1 : 0;
-    if (players[mover] == 'computer' &&
-    autoPlayTimeout === undefined) {
-      var timeout = (players[1 - mover] == 'computer') ? 500: 10;
-  	  autoPlayTimeout = window.setTimeout(function() {
-        computerMove()}.bind(this), timeout);
-    }
+		if (active == true) {
+			var nextColor = ENGINE_INTERFACE.whosTurn();
+			var mover = (nextColor == "black") ? 1 : 0;
+			if (players[mover] == "computer") {
+				deactivateMoveListener();
+			} else {
+				activateMoveListener();
+			}
+			if (players[mover] == 'computer' &&
+			autoPlayTimeout === undefined) {
+				var timeout = (players[1 - mover] == 'computer') ? 500: 10;
+				autoPlayTimeout = window.setTimeout(function() {
+					computerMove()}.bind(this), timeout);
+				}
+		}
   };
 
   var computerMove = function() {
+		// TODO: notwendig?
     autoPlayTimeout = undefined;
     var move = ENGINE_INTERFACE.computerMove();
     var timeout = animateMove(move.start, move.target,
-        function(refresh, engineInterface) {
+        function(engineInterface, refresh, next) {
           return function() {
             engineInterface.move(move.start, move.target);
             refresh();
+						next();
           };
-        }(PublicInterface.refresh, ENGINE_INTERFACE));
+        }(ENGINE_INTERFACE, PublicInterface.refresh, nextMove));
   };
 
   //Nur fürs animieren mehrerer moves (auf einmal)
@@ -284,7 +320,7 @@ var FrontEnd = (function(id, customState) {
   };
 
   /* MSIE 6 compatibility functions */
-  var addEventListenerIE6Compatibility = function (el, eventname, fn) {
+  var addEventListenerIE6Compatibility = function(el, eventname, fn) {
     if (el.addEventListener === undefined) {
       el.attachEvent('on' + eventname, fn);
     } else {
@@ -292,11 +328,69 @@ var FrontEnd = (function(id, customState) {
     }
   };
 
+	var activateMoveListener = function() {
+		// Geht auf Nummer sicher, dass nicht auf einmal mehrere Listener gleichzeitig aktiv sind
+		deactivateMoveListener();
+		var canvas = elements.boardCanvas;
+		var interactionListener = canvas.interactionListener;
+		if (PublicInterface.interactionStyle == 1) {
+			canvas.interactionListener.startListener = GameStartListenerDown.bind(PublicInterface);
+			canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
+		} else if (PublicInterface.interactionStyle == 2) {
+			canvas.interactionListener.startListener = GameStartListenerUp.bind(PublicInterface);
+			canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
+		}
+	};
+
+	var deactivateMoveListener = function() {
+		var canvas = PublicInterface.chessboard.canvas;
+		var interactionListener = canvas.interactionListener;
+		canvas.removeEventListener("mousedown", interactionListener.startListener, false);
+		canvas.removeEventListener("mouseup", interactionListener.startListener, false);
+		canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
+		canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
+		interactionListener.startListener = null;
+		interactionListener.moveListener = null;
+		interactionListener.targetListener = null;
+	};
+
+	var activateBoard = function() {
+		active = true;
+		activateMoveListener();
+		nextMove();
+	}
+
+	var deactivateBoard = function() {
+		deactivateMoveListener();
+		active = false;
+	}
+
+	var enableEditor = function() {
+		PublicInterface.chessboard.clearCanvas();
+		PublicInterface.CANVAS_OFFSET_LEFT = 2 * PublicInterface.SQUARE_SIZE;
+		var canvas = elements.boardCanvas;
+		canvas.width += PublicInterface.CANVAS_OFFSET_LEFT;
+		PublicInterface.chessboard.create();
+		PublicInterface.chessboard.loadBoard(null);
+		deactivateBoard();
+		boardEditor = new BoardEditor(canvas, PublicInterface, elements.controls);
+	}
+
+	var disableEditor = function() {
+		activateBoard();
+	}
+
   initFrontendAndEngine(id);
   renderElements();
   initChessboard();
-  writeControlsHtml(CONTROLS);
-  PublicInterface.refresh();
+
+	if (editMode) {
+		enableEditor();
+	} else {
+		writeControlsHtml(CONTROLS);
+	  PublicInterface.refresh();
+		nextMove();
+	}
 
   return PublicInterface
 });

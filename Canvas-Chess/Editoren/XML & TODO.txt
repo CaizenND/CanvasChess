@@ -1,0 +1,117 @@
+<ChessPosition>
+  <StartingPosition>
+    5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10
+  </StartingPosition>
+  <Move id="x">
+    <Start>A1</Start>
+    <Target>A2</Target>
+  </Move>
+    ...
+</ChessPosition>
+
+Mouseover bei Option = Animation ?
+Evtl. Mehrere gültige Antworten?
+Schachbrett übergeben
+
+Felix: Multiple Choice Web Editor
+Nils: Schachsituation Web Editor
+
+<?xml version="1.0" encoding="iso-8859-1"?>
+<exercise type="mc">
+        <input>
+    <inputfile name="position" type="xml"/> => Chain
+                <inputvalue name="z" type="integer" />
+                <inputvalue name="n" type="integer" />
+                <inputvalue name="v" type="integer" />
+                <inputvalue name="wrong" type="integer" />
+                <inputvalue name="b" type="integer" />
+        </input>
+        <task> Welcher der folgenden Punkte ist der Punkt in welchem der Graph die $y$-Achse schneidet? </task>
+        <answers randomize="false" >
+                <option> $(0,[frac num="[var=v]" denom="[var=n]"])$ </option>
+                <option> $([var=b],0)$ </option>
+                <option> $(0,[frac num="[var=z]" denom="[var=n]"])$ </option>
+                <option> $(1,[frac num="[var=wrong]" denom="[var=n]"])$ </option>
+        </answers>
+        <feedback>
+                <choice pattern="0100"> Leider falsch. Dieser Punkt liegt nicht auf der $y$-Achse. </choice>
+                <choice pattern="0010"> Leider falsch. Dieser Punkt liegt nicht auf der Parabel. </choice>
+                <choice pattern="0001"> Leider falsch. Der Punkt liegt zwar auf der Parabel, aber nicht auf der $y$-Achse. </choice>
+                <choice pattern="andere"> Leider falsch. Es kann höchstens eine Antwort richtig sein. Hätte der Graph zwei Schnittpunkte mit der $y$-Achse, so wäre $f$ keine Funktion. </choice>
+        </feedback>
+        <correctanswer>
+                <choice pattern="1000" />
+                <message> Richtig, man muss die Funktion in $0$ auswerten um den Schnittpunkt mit der $y$-Achse zu erhalten. </message>
+        </correctanswer>
+        <advice>
+                <option> Du musst die Funktion in $x = 0$ auswerten, um den Schnittpunkt mit der $y$-Achse zu erhalten. </option>
+        </advice>
+        <skipmessage> Der Schnittpunkt mit der $y$-Achse ist $(0,[frac num="[var=v]" denom="[var=n]"])$ </skipmessage>
+        <output></output>
+</exercise>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<exercise>
+  <general>
+    <title>Kurvendiskussion Parabel</title>
+    <category>Form Based</category>
+    <view-type>FORMBASED</view-type>
+    <is-active>true</is-active>
+    <is-public>true</is-public>
+    <level-of-difficulty>2</level-of-difficulty>
+    <exercise-tag-list>FormBased;</exercise-tag-list>
+    <internal-description>Bitte Variablen einfügen.</internal-description>
+    <external-description />
+    <penalty-percent>0</penalty-percent>
+    <minimum-correct-result>50</minimum-correct-result>
+    <evaluation-rule />
+  </general>
+  <checker-configurations>
+    <checker-configuration>
+      <instance-name>InstantFillInChecker (1)</instance-name>
+      <result-name>InstantFillInChecker (1) result</result-name>
+      <is-visible>true</is-visible>
+      <is-visible-detail>true</is-visible-detail>
+      <is-active>false</is-active>
+      <checker-id>de.uni_due.s3.jack2.server.core.instantcheckers.FillInChecker</checker-id>
+      <variable-name>c5530</variable-name>
+      <checker-configuration-tuples />
+    </checker-configuration>
+    <checker-configuration>
+      <instance-name>InstantMultipleChoiceChecker (1)</instance-name>
+      <result-name>InstantMultipleChoiceChecker (1) result</result-name>
+      <is-visible>true</is-visible>
+      <is-visible-detail>true</is-visible-detail>
+      <is-active>false</is-active>
+      <checker-id>de.uni_due.s3.jack2.server.core.instantcheckers.MultipleChoiceChecker</checker-id>
+      <variable-name>c5531</variable-name>
+      <checker-configuration-tuples />
+    </checker-configuration>
+  </checker-configurations>
+  <exercise-resources>
+    <exercise-resource>
+      <file-name>exerciseChain.xml</file-name>
+      <type>WORKING_SHEET</type>
+    </exercise-resource>
+    <exercise-resource>
+      <file-name>stage1.xml</file-name>
+      <type>WORKING_SHEET</type>
+    </exercise-resource>
+    <exercise-resource>
+      <file-name>stage2.xml</file-name>
+      <type>WORKING_SHEET</type>
+    </exercise-resource>
+    <exercise-resource>
+      <file-name>stage3.xml</file-name>
+      <type>WORKING_SHEET</type>
+    </exercise-resource>
+    <exercise-resource>
+      <file-name>stage4.xml</file-name>
+      <type>WORKING_SHEET</type>
+    </exercise-resource>
+    <exercise-resource>
+      <file-name>stage5.xml</file-name>
+      <type>WORKING_SHEET</type>
+    </exercise-resource>
+  </exercise-resources>
+</exercise>
