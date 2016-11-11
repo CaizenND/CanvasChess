@@ -1,0 +1,13 @@
+<ChessGame>
+	<StartingPosition>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</StartingPosition>
+	<Move id="1">
+		<Start>d2</Start>
+		<Target>d4</Target>
+		<Promotion>knight</Promotion>
+	</Move>
+	<Move id="2">
+		<Start>c7</Start>
+		<Target>c5</Target>
+		<Promotion>rook</Promotion>
+	</Move>
+</ChessGame>

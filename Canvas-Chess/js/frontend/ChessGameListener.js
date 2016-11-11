@@ -10,15 +10,14 @@ function GameStartListenerDown(evt) {
     var piece = board.pieces[i];
     if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
       && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
-        canvas.dragging = true;
-        canvas.dragHoldX = mouseX - piece.posX;
-        canvas.dragHoldY = mouseY - piece.posY;
-        canvas.draggedPiece = piece;
+        board.dragging.dragHoldX = mouseX - piece.posX;
+        board.dragging.dragHoldY = mouseY - piece.posY;
+        board.dragging.draggedPiece = piece;
         break;
     }
   }
 
-  if (canvas.dragging) {
+  if (board.dragging.draggedPiece != null) {
     var interactionListener = canvas.interactionListener;
     interactionListener.moveListener = GameMoveListener.bind(this);
     canvas.addEventListener("mousemove", interactionListener.moveListener, false);
@@ -43,22 +42,21 @@ function GameStartListenerUp(evt) {
     var piece = board.pieces[i];
     if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
       && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
-        canvas.dragging = true;
-        canvas.dragHoldX = mouseX - piece.posX;
-        canvas.dragHoldY = mouseY - piece.posY;
-        canvas.draggedPiece = piece;
+        board.dragging.dragHoldX = mouseX - piece.posX;
+        board.dragging.dragHoldY = mouseY - piece.posY;
+        board.dragging.draggedPiece = piece;
         break;
     }
   }
 
-  if (canvas.dragging) {
+  if (board.dragging.draggedPiece != null) {
     var interactionListener = canvas.interactionListener;
     interactionListener.moveListener = GameMoveListener.bind(this);
     canvas.addEventListener("mousemove", interactionListener.moveListener, false);
     canvas.removeEventListener("mouseup", interactionListener.startListener, false);
     interactionListener.startListener = null;
     interactionListener.targetListener = GameTargetListener.bind(this);
-    canvas.startEvent = evt;
+    interactionListener.startEvent = evt;
     canvas.addEventListener("mouseup", interactionListener.targetListener, false);
   }
 
@@ -70,7 +68,7 @@ function GameMoveListener(evt) {
   var canvas = board.canvas;
   var posX;
   var posY;
-  var shapeRad = canvas.draggedPiece.size;
+  var shapeRad = board.dragging.draggedPiece.size;
   var minX = 0;
   var maxX = canvas.width - shapeRad;
   var minY = 0;
@@ -82,15 +80,15 @@ function GameMoveListener(evt) {
   mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
   //clamp x and y positions to prevent object from dragging outside of canvas
-  posX = mouseX - canvas.dragHoldX;
+  posX = mouseX - board.dragging.dragHoldX;
   posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
-  posY = mouseY - canvas.dragHoldY;
+  posY = mouseY - board.dragging.dragHoldY;
   posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
 
-  canvas.draggedPiece.posX = posX;
-  canvas.draggedPiece.posY = posY;
+  board.dragging.draggedPiece.posX = posX;
+  board.dragging.draggedPiece.posY = posY;
 
-  board.draw();
+  canvas.draw();
 
   return false;
 }
@@ -103,12 +101,14 @@ function GameTargetListener(evt) {
   mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
   mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
-  if (canvas.startEvent != evt) {
+  var interactionListener = canvas.interactionListener;
+
+  if (interactionListener.startEvent != evt) {
 
     if (mouseX >= board.posX && mouseX <= board.posX + board.width
       && mouseY >= board.posY && mouseY <= board.posY + board.height) {
 
-        var piece = canvas.draggedPiece;
+        var piece = board.dragging.draggedPiece;
         var startField = null;
         var targetField = null;
         for (var i = 0; i < 8; i++) {
@@ -133,20 +133,19 @@ function GameTargetListener(evt) {
         }
       }
 
-    var interactionListener = canvas.interactionListener;
     canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
     interactionListener.moveListener = null;
     canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
     interactionListener.targetListener = null;
-    if (this.interactionStyle == 1) {
+    if (this.interactionMode == 1) {
       interactionListener.startListener = GameStartListenerDown.bind(this);
       canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
-    } else if (this.interactionStyle == 2) {
+    } else if (this.interactionMode == 2) {
       interactionListener.startListener = GameStartListenerUp.bind(this);
       canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
     }
-    canvas.dragging = false;
-    canvas.draggedPiece = null;
+    interactionListener.startEvent = null;
+    board.dragging.draggedPiece = null;
     this.refresh();
   }
 

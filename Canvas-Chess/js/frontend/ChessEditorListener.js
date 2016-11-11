@@ -11,14 +11,14 @@ function EditorStartListener(evt) {
       var piece = this.pieces[i];
       if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
         && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
-          canvas.dragging = true;
-          canvas.dragHoldX = mouseX - piece.posX;
-          canvas.dragHoldY = mouseY - piece.posY;
-          canvas.draggedPiece = new Piece(piece.color, piece.type, canvas);
-          canvas.draggedPiece.setPosition(piece.posX, piece.posY);
-          canvas.draggedPiece.setSize(piece.size);
-          canvas.draggedPiece.setID(piece.idX, piece.idY)
-          canvas.draggedPiece.loadImage();
+          board.dragging.dragHoldX = mouseX - piece.posX;
+          board.dragging.dragHoldY = mouseY - piece.posY;
+          var newPiece = new Piece(piece.color, piece.type, canvas, board);
+          newPiece.setPosition(piece.posX, piece.posY);
+          newPiece.setSize(piece.size);
+          newPiece.setID(piece.idX, piece.idY)
+          newPiece.loadImage();
+          board.dragging.draggedPiece = newPiece;
       }
     }
   } else if (mouseX >= board.posX && mouseX <= board.posX + board.width
@@ -27,23 +27,22 @@ function EditorStartListener(evt) {
         var piece = board.pieces[i];
         if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
           && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
-            canvas.dragging = true;
-            canvas.dragHoldX = mouseX - piece.posX;
-            canvas.dragHoldY = mouseY - piece.posY;
-            canvas.draggedPiece = piece;
+            board.dragging.dragHoldX = mouseX - piece.posX;
+            board.dragging.dragHoldY = mouseY - piece.posY;
+            board.dragging.draggedPiece = piece;
             break;
         }
       }
   }
 
-  if (canvas.dragging) {
+  if (board.dragging.draggedPiece != null) {
     var interactionListener = canvas.interactionListener;
     interactionListener.moveListener = EditorMoveListener.bind(this);
     canvas.addEventListener("mousemove", interactionListener.moveListener, false);
     canvas.removeEventListener("mouseup", interactionListener.startListener, false);
     interactionListener.startListener = null;
     interactionListener.targetListener = EditorTargetListener.bind(this);
-    canvas.startEvent = evt;
+    interactionListener.startEvent = evt;
     canvas.addEventListener("mouseup", interactionListener.targetListener, false);
   }
 
@@ -55,7 +54,7 @@ function EditorMoveListener(evt) {
   var canvas = board.canvas;
   var posX;
   var posY;
-  var shapeRad = canvas.draggedPiece.size;
+  var shapeRad = board.dragging.draggedPiece.size;
   var minX = 0;
   var maxX = canvas.width - shapeRad;
   var minY = 0;
@@ -67,16 +66,15 @@ function EditorMoveListener(evt) {
   mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
   //clamp x and y positions to prevent object from dragging outside of canvas
-  posX = mouseX - canvas.dragHoldX;
+  posX = mouseX - board.dragging.dragHoldX;
   posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
-  posY = mouseY - canvas.dragHoldY;
+  posY = mouseY - board.dragging.dragHoldY;
   posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
 
-  canvas.draggedPiece.posX = posX;
-  canvas.draggedPiece.posY = posY;
+  board.dragging.draggedPiece.posX = posX;
+  board.dragging.draggedPiece.posY = posY;
 
-  this.draw();
-  board.draw();
+  canvas.draw()
 
   return false;
 }
@@ -85,19 +83,21 @@ function EditorTargetListener(evt) {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
 
-  if (canvas.startEvent != evt) {
+  var interactionListener = canvas.interactionListener;
+
+  if (interactionListener.startEvent != evt) {
 
     var bRect = canvas.getBoundingClientRect();
     mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
     mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
-    if (board.pieces.includes(canvas.draggedPiece)) {
+    if (board.pieces.includes(board.dragging.draggedPiece)) {
         // remove piece from arry containing all pieces on board
-        var index = board.pieces.indexOf(canvas.draggedPiece);
+        var index = board.pieces.indexOf(board.dragging.draggedPiece);
         board.pieces.splice(index, 1);
     }
 
-    var piece = canvas.draggedPiece;
+    var piece = board.dragging.draggedPiece;
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
         var currentField = board.fields[i][j];
@@ -114,27 +114,25 @@ function EditorTargetListener(evt) {
               var index = board.pieces.indexOf(currentField.piece);
               board.pieces.splice(index, 1);
             }
-            currentField.setPiece(canvas.draggedPiece);
-            if (!board.pieces.includes(canvas.draggedPiece)) {
-              board.pieces.push(canvas.draggedPiece);
+            currentField.setPiece(board.dragging.draggedPiece);
+            if (!board.pieces.includes(board.dragging.draggedPiece)) {
+              board.pieces.push(board.dragging.draggedPiece);
             }
         }
       }
     }
   }
 
-  var interactionListener = canvas.interactionListener;
   canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
   interactionListener.moveListener = null;
   canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
   interactionListener.targetListener = null;
   interactionListener.startListener = EditorStartListener.bind(this);
   canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
+  interactionListener.startEvent = null;
 
-  canvas.dragging = false;
-  canvas.draggedPiece = null;
-  this.draw();
-  board.draw();
+  board.dragging.draggedPiece = null;
+  this.canvas.draw();
   this.checkRochade();
 
   return false;

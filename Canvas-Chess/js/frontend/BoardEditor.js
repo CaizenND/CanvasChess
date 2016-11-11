@@ -9,52 +9,15 @@ function BoardEditor(canvas, frontEnd, frontEndControls) {
 
   this.buildPieces();
 
-  this.buildControls(frontEndControls);
-};
-
-BoardEditor.prototype.buildControls = function(frontEndControls) {
-  this.controls = createNewChild(frontEndControls, "div", "editorControls");
-  // active player
-  var labelActive = createNewChild(this.controls, "label", "activePlayer");
-  labelActive.innerHTML = "active player:"
-  this.controls.activePlayer = createNewChild(labelActive, "select", "activePlayerSelect");
-  var playerWhite = createNewChild(this.controls.activePlayer, "option", "white");
-  playerWhite.value = "w";
-  playerWhite.innerHTML = "white";
-  var playerBlack = createNewChild(this.controls.activePlayer, "option", "black");
-  playerBlack.value = "b";
-  playerBlack.innerHTML = "black";
-  // white Rochade
-  var labelwr = createNewChild(this.controls, "label", "rochade");
-  labelwr.innerHTML = "white Rochades:"
-  this.controls.whiteRochade = createNewChild(labelwr, "select", "rochadeSelect");
-  this.controls.whiteRochade.none = createNewChild(this.controls.whiteRochade, "option");
-  this.controls.whiteRochade.none.value = "";
-  this.controls.whiteRochade.none.innerHTML = "";
-  this.controls.whiteRochade.king_queen = null;
-  this.controls.whiteRochade.king = null;
-  this.controls.whiteRochade.queen = null;
-  // black Rochade
-  var labelbr = createNewChild(this.controls, "label", "rochade");
-  labelbr.innerHTML = "black Rochades:"
-  this.controls.blackRochade = createNewChild(labelbr, "select", "rochadeSelect");
-  this.controls.blackRochade.none = createNewChild(this.controls.blackRochade, "option");
-  this.controls.blackRochade.none.value = "";
-  this.controls.blackRochade.none.innerHTML = "";
-  this.controls.blackRochade.king_queen = null;
-  this.controls.blackRochade.king = null;
-  this.controls.blackRochade.queen = null;
+  this.controls = createEditorControls(frontEndControls, this);
   this.checkRochade();
-  // continue button
-  this.controls.continueButton = createNewChild(this.controls, "button", "continue");
-  this.controls.continueButton.innerHTML = "Continue"
-  this.controls.continueButton.onclick = this.exportFEN.bind(this);
   // mouse Listener
   this.canvas.interactionListener.startListener = EditorStartListener.bind(this);
   this.canvas.addEventListener("mouseup", this.canvas.interactionListener.startListener, false);
 };
 
 BoardEditor.prototype.destroyControls = function() {
+  this.frontEndControls.removeChild(this.controls.meta);
   this.frontEndControls.removeChild(this.controls);
   var canvas = this.frontEnd.chessboard.canvas;
   var interactionListener = canvas.interactionListener;
@@ -64,62 +27,63 @@ BoardEditor.prototype.destroyControls = function() {
 };
 
 BoardEditor.prototype.buildPieces = function() {
-  var currentPiece = new Piece("black", "pawn", this.canvas);
+  var board = this.frontEnd.chessboard;
+  var currentPiece = new Piece("black", "pawn", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 0.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "rook", this.canvas);
+  currentPiece = new Piece("black", "rook", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 0.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "knight", this.canvas);
+  currentPiece = new Piece("black", "knight", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 1.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "bishop", this.canvas);
+  currentPiece = new Piece("black", "bishop", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 1.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "queen", this.canvas);
+  currentPiece = new Piece("black", "queen", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 2.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "king", this.canvas);
+  currentPiece = new Piece("black", "king", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 2.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "pawn", this.canvas);
+  currentPiece = new Piece("white", "pawn", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 5.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "rook", this.canvas);
+  currentPiece = new Piece("white", "rook", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 5.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "knight", this.canvas);
+  currentPiece = new Piece("white", "knight", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 6.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "bishop", this.canvas);
+  currentPiece = new Piece("white", "bishop", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 6.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "queen", this.canvas);
+  currentPiece = new Piece("white", "queen", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 7.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "king", this.canvas);
+  currentPiece = new Piece("white", "king", this.canvas, board);
   currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
     this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 7.1));
   this.pieces.push(currentPiece);
@@ -134,9 +98,9 @@ BoardEditor.prototype.buildPieces = function() {
 BoardEditor.prototype.checkRochade = function() {
   var fields = this.frontEnd.chessboard.fields;
   // white Rochade
-  if (this.controls.whiteRochade.king_queen != null) {
-    this.controls.whiteRochade.removeChild(this.controls.whiteRochade.king_queen);
-    this.controls.whiteRochade.king_queen = null;
+  if (this.controls.whiteRochade.kingQueen != null) {
+    this.controls.whiteRochade.removeChild(this.controls.whiteRochade.kingQueen);
+    this.controls.whiteRochade.kingQueen = null;
   }
   if (this.controls.whiteRochade.king != null) {
     this.controls.whiteRochade.removeChild(this.controls.whiteRochade.king);
@@ -166,26 +130,26 @@ BoardEditor.prototype.checkRochade = function() {
   }
   if (wKingInPos) {
     if (wRookLInPos && wRookRInPos) {
-      this.controls.whiteRochade.king_queen = createNewChild(this.controls.whiteRochade, "option");
-      this.controls.whiteRochade.king_queen.innerHTML = "KQ";
-      this.controls.whiteRochade.king_queen.value = "KQ";
+      this.controls.whiteRochade.kingQueen = createNewChild(this.controls.whiteRochade, "option");
+      this.controls.whiteRochade.kingQueen.appendChild(document.createTextNode("KQ"));
+      this.controls.whiteRochade.kingQueen.value = "KQ";
     }
     if (wRookRInPos) {
       this.controls.whiteRochade.king = createNewChild(this.controls.whiteRochade, "option");
-      this.controls.whiteRochade.king.innerHTML = "K";
+      this.controls.whiteRochade.king.appendChild(document.createTextNode("K"));
       this.controls.whiteRochade.king.value = "K";
     }
     if (wRookLInPos) {
       this.controls.whiteRochade.queen = createNewChild(this.controls.whiteRochade, "option");
-      this.controls.whiteRochade.queen.innerHTML = "Q";
+      this.controls.whiteRochade.queen.appendChild(document.createTextNode("Q"));
       this.controls.whiteRochade.queen.value = "Q";
     }
   }
 
   // black Rochade
-  if (this.controls.blackRochade.king_queen != null) {
-    this.controls.blackRochade.removeChild(this.controls.blackRochade.king_queen);
-    this.controls.blackRochade.king_queen = null;
+  if (this.controls.blackRochade.kingQueen != null) {
+    this.controls.blackRochade.removeChild(this.controls.blackRochade.kingQueen);
+    this.controls.blackRochade.kingQueen = null;
   }
   if (this.controls.blackRochade.king != null) {
     this.controls.blackRochade.removeChild(this.controls.blackRochade.king);
@@ -215,29 +179,24 @@ BoardEditor.prototype.checkRochade = function() {
   }
   if (bKingInPos) {
     if (bRookLInPos && bRookRInPos) {
-      this.controls.blackRochade.king_queen = createNewChild(this.controls.blackRochade, "option");
-      this.controls.blackRochade.king_queen.innerHTML = "kq";
-      this.controls.blackRochade.king_queen.value = "kq";
+      this.controls.blackRochade.kingQueen = createNewChild(this.controls.blackRochade, "option");
+      this.controls.blackRochade.kingQueen.appendChild(document.createTextNode("kq"));
+      this.controls.blackRochade.kingQueen.value = "kq";
     }
     if (bRookRInPos) {
       this.controls.blackRochade.king = createNewChild(this.controls.blackRochade, "option");
-      this.controls.blackRochade.king.innerHTML = "k";
+      this.controls.blackRochade.king.appendChild(document.createTextNode("k"));
       this.controls.blackRochade.king.value = "k";
     }
     if (bRookLInPos) {
       this.controls.blackRochade.queen = createNewChild(this.controls.blackRochade, "option");
-      this.controls.blackRochade.queen.innerHTML = "q";
+      this.controls.blackRochade.queen.appendChild(document.createTextNode("q"));
       this.controls.blackRochade.queen.value = "q";
     }
   }
 };
 
 BoardEditor.prototype.draw = function() {
-  var ctx = this.canvas.getContext("2d");
-  ctx.save();
-  ctx.fillStyle = "White";
-  ctx.fillRect(0, 0, this.width, this.height);
-  ctx.restore();
   for (var i = 0; i < this.pieces.length; i++) {
     this.pieces[i].draw();
   }

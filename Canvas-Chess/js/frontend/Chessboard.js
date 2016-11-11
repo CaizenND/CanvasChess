@@ -9,6 +9,10 @@ function Chessboard(canvas, frontEnd) {
   this.posY = 0;
   this.width = 0;
   this.height = 0;
+  this.dragging = {};
+  this.dragging.dragHoldX = null;
+  this.dragging.dragHoldY = null;
+  this.dragging.draggedPiece = null;
 }
 
 Chessboard.prototype.create = function() {
@@ -37,7 +41,6 @@ Chessboard.prototype.create = function() {
       }
     }
   }
-  // this.draw();
 };
 
 Chessboard.prototype.getLetterOfID = function(id) {
@@ -73,7 +76,6 @@ Chessboard.prototype.switchPositions = function(orientation) {
 };
 
 Chessboard.prototype.draw = function() {
-  this.clearCanvas();
   var ctx = this.canvas.getContext("2d");
   ctx.save();
   ctx.fillStyle = "Black";
@@ -112,24 +114,16 @@ Chessboard.prototype.draw = function() {
     8*this.frontEnd.SQUARE_SIZE, 8*this.frontEnd.SQUARE_SIZE);
   ctx.restore();
   for (var i = 0; i < this.pieces.length; i++) {
-    if (this.pieces[i] != this.canvas.draggedPiece) {
+    if (this.pieces[i] != this.dragging.draggedPiece) {
       this.pieces[i].draw();
     }
   }
-  if (this.canvas.draggedPiece != null) {
-    this.canvas.draggedPiece.draw();
+  if (this.dragging.draggedPiece != null) {
+    this.dragging.draggedPiece.draw();
   }
 };
 
-Chessboard.prototype.clearCanvas = function() {
-  var ctx = this.canvas.getContext("2d");
-  ctx.save();
-  ctx.fillStyle = "White";
-  ctx.fillRect(this.posX, this.posY, this.width, this.height);
-  ctx.restore();
-}
-
-Chessboard.prototype.loadBoard = function(board_state) {
+Chessboard.prototype.loadBoard = function(boardState) {
   // Prevent deleted pieces from loading their images and drawing to the canvas
   for (var i = 0; i < this.pieces.length; i++) {
     this.pieces[i].image.onload = null;
@@ -142,24 +136,24 @@ Chessboard.prototype.loadBoard = function(board_state) {
     }
   }
 
-  if (board_state != null) {
+  if (boardState != null) {
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
         //var index = 20 + (i*10) + (j+1);
         var currentPiece = null;
-        switch (board_state[7-i][j]) {
-          case 2: currentPiece = new Piece("white", "pawn", this.canvas); break;
-          case 3: currentPiece = new Piece("black", "pawn", this.canvas); break;
-          case 4: currentPiece = new Piece("white", "rook", this.canvas); break;
-          case 5: currentPiece = new Piece("black", "rook", this.canvas); break;
-          case 6: currentPiece = new Piece("white", "knight", this.canvas); break;
-          case 7: currentPiece = new Piece("black", "knight", this.canvas); break;
-          case 8: currentPiece = new Piece("white", "bishop", this.canvas); break;
-          case 9: currentPiece = new Piece("black", "bishop", this.canvas); break;
-          case 10: currentPiece = new Piece("white", "king", this.canvas); break;
-          case 11: currentPiece = new Piece("black", "king", this.canvas); break;
-          case 12: currentPiece = new Piece("white", "queen", this.canvas); break;
-          case 13: currentPiece = new Piece("black", "queen", this.canvas); break;
+        switch (boardState[7-i][j]) {
+          case 2: currentPiece = new Piece("white", "pawn", this.canvas, this); break;
+          case 3: currentPiece = new Piece("black", "pawn", this.canvas, this); break;
+          case 4: currentPiece = new Piece("white", "rook", this.canvas, this); break;
+          case 5: currentPiece = new Piece("black", "rook", this.canvas, this); break;
+          case 6: currentPiece = new Piece("white", "knight", this.canvas, this); break;
+          case 7: currentPiece = new Piece("black", "knight", this.canvas, this); break;
+          case 8: currentPiece = new Piece("white", "bishop", this.canvas, this); break;
+          case 9: currentPiece = new Piece("black", "bishop", this.canvas, this); break;
+          case 10: currentPiece = new Piece("white", "king", this.canvas, this); break;
+          case 11: currentPiece = new Piece("black", "king", this.canvas, this); break;
+          case 12: currentPiece = new Piece("white", "queen", this.canvas, this); break;
+          case 13: currentPiece = new Piece("black", "queen", this.canvas, this); break;
           default: break;
         }
         if (currentPiece != null) {
@@ -170,5 +164,4 @@ Chessboard.prototype.loadBoard = function(board_state) {
       }
     }
   }
-  this.draw();
 };
