@@ -473,7 +473,6 @@ var FrontEnd = (function(id, customStart, editMode) {
 		if (components != null && components[0] != null && components[0] != "8/8/8/8/8/8/8/8") {
 			engineInterface.init(customStartFEN);
 		}
-		publicInterface.refresh();
 	};
 
   initFrontend(id);
@@ -484,6 +483,7 @@ var FrontEnd = (function(id, customStart, editMode) {
 		writeControlsHtml();
 		activateBoard();
 		interpretCustomStart(customStart);
+		publicInterface.refresh();
 	} else if (editMode == true) {
 		enableEditor();
 	}
