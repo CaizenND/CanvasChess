@@ -52,7 +52,6 @@ Field.prototype.draw = function() {
   ctx.save();
   ctx.fillStyle = this.color;
   ctx.fillRect(this.posX, this.posY, this.size, this.size);
-  ctx.fill();
   ctx.restore();
   //if (this.piece != null) {
     //this.piece.draw(this.canvas);

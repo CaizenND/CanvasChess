@@ -1,4 +1,3 @@
-// TODO: promotion in engine
 var FrontEnd = (function(id, customStart, editMode) {
 
 	// public Attribute
@@ -13,17 +12,18 @@ var FrontEnd = (function(id, customStart, editMode) {
 	}
 
 	// private Attribute
-  var startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
 	var replay = {};
 
-	var engineInterface = new EngineInterface();
+	var engineInterface = new EngineInterface(publicInterface);
 
 	var boardEditor = null;
 
+	// TODO: braucht man die überhaupt?
 	var INNER_DIV_CLASS = "inner";
 
   var BOARD_CANVAS_CLASS = "boardCanvas";
+
+	var LOGGING_DIV_CLASS = "logging";
 
   var CONTROL_DIV_CLASS = "controls";
 
@@ -36,8 +36,9 @@ var FrontEnd = (function(id, customStart, editMode) {
   var autoPlayTimeout = undefined;
 
   // public Methoden
-	publicInterface.move = function(start, target) {
-    var moveResult = engineInterface.move(start, target, null);
+	// TODO: moves immer als Klasse weitergeben, nicht start, target, promotion
+	publicInterface.move = function(move) {
+    var moveResult = engineInterface.move(move);
     if (moveResult && !engineInterface.isGameOver()) {
       this.nextMove_timeout = window.setTimeout(
         function(next) {
@@ -51,11 +52,12 @@ var FrontEnd = (function(id, customStart, editMode) {
 
   publicInterface.refresh = function() {
     publicInterface.chessboard.loadBoard(engineInterface.getBoard());
+		// TODO: ANimationen mit requestanimationframe?
 		elements.boardCanvas.draw();
   };
 
 	publicInterface.exportGameToXML = function() {
-		var fen = startFEN;
+		var fen = engineInterface.getStartFEN();
 		if (fen != null) {
 			var xml = "<ChessGame>\n\t<StartingPosition>" + fen + "</StartingPosition>";
 			var history = engineInterface.getMoveHistory();
@@ -90,13 +92,13 @@ var FrontEnd = (function(id, customStart, editMode) {
 	publicInterface.playReplay = function() {
 		if (replay != null) {
 			// initiate engine with start FEN
-			initEngine(replay.startFEN);
-			this.refresh();
+			this.goToMove(0);
 			var div = elements.controls;
 			var progressBar = div.getElementsByClassName("progress-replay")[0];
 			var replayButton = div.getElementsByClassName("button-replay")[0];
 			replayButton.disabled = true;
 			// replay moves
+			playersOld = players;
 			players = ["human", "human"];
 			deactivateBoard();
 			replay.progress = 0;
@@ -105,13 +107,14 @@ var FrontEnd = (function(id, customStart, editMode) {
 			var callback = function(){
 				replayButton.disabled = false;
 				activateBoard();
+				players = playersOld;
 				nextMove();
 			}.bind(this);
 			for (var i = replay.movelist.length-1; i >= 0; i--) {
 				var currentMove = replay.movelist[i];
 				callback = (function(move, progress, callback) {
 					return function() {
-						engineInterface.move(move.start, move.target, move.promotion);
+						engineInterface.move(move);
 						this.refresh();
 						replay.progress = progress;
 						progressBar.value = progress;
@@ -120,7 +123,7 @@ var FrontEnd = (function(id, customStart, editMode) {
 				}.bind(this))(currentMove, (i+1), callback);
 				callback = (function(move, callback) {
 					return function() {
-						animateMove(move.start, move.target, callback);
+						animateMove(move, callback);
 					}.bind(this);
 				}.bind(this))(currentMove, callback);
 			}
@@ -131,7 +134,7 @@ var FrontEnd = (function(id, customStart, editMode) {
 	publicInterface.setInteractionMode = function(interactionMode) {
 		if (interactionMode >= 1 && interactionMode <= 2) {
 			deactivateMoveListener();
-			publicInterface.interactionMode = interactionMode;
+			this.interactionMode = interactionMode;
 			activateMoveListener();
 		}
 	}
@@ -146,6 +149,34 @@ var FrontEnd = (function(id, customStart, editMode) {
 			players[id] = control;
 			nextMove();
 		}
+	}
+
+	publicInterface.logMove = function(moveString, moveID) {
+		var logOut = elements.logging.output;
+		// TODO: vernünftige Klasse
+		var loggedMove = createNewChild(logOut, "div", "log-move");
+		loggedMove.appendChild(document.createTextNode(moveString));
+		loggedMove.value = moveID;
+
+		loggedMove.onclick = (function(frontEnd, element) {
+			return function() {
+				var moveID = this.value;
+				frontEnd.goToMove(moveID);
+			}.bind(element)
+		})(publicInterface, loggedMove);
+		// always scroll to bottom to show newest move
+		logOut.scrollTop = logOut.scrollHeight;
+	}
+
+	publicInterface.goToMove = function(moveID) {
+		var logOut = elements.logging.output;
+		var child = logOut.lastChild;
+		while (child != null && child.value > moveID) {
+			logOut.removeChild(logOut.lastChild);
+			child = logOut.lastChild;
+		}
+		engineInterface.goToMove(moveID);
+		this.refresh();
 	}
 
   //private Methoden
@@ -164,6 +195,7 @@ var FrontEnd = (function(id, customStart, editMode) {
     elements.inner = inner;
     elements.container = container;
     elements.boardCanvas = createNewChild(inner, "canvas", BOARD_CANVAS_CLASS);
+		elements.logging = createNewChild(container, "div", LOGGING_DIV_CLASS);
 		prepareCanvas();
     elements.controls = createNewChild(container, "div", CONTROL_DIV_CLASS);
   };
@@ -203,18 +235,6 @@ var FrontEnd = (function(id, customStart, editMode) {
 	  canvas.interactionListener.startEvent = null;
 	};
 
-	var initEngine = function(customStartFEN) {
-		if (customStartFEN != undefined && customStartFEN != null) {
-			// prevent empty boards from loading
-			var components = customStartFEN.split(" ");
-			if (components != null && components[0] != null && components[0] != "8/8/8/8/8/8/8/8") {
-				startFEN = customStartFEN;
-			}
-		}
-		engineInterface.init(startFEN);
-		publicInterface.refresh();
-	};
-
   //Stellt Größe ein. Für das Canvas muss was davon rüber
   var renderElements = function() {
     publicInterface.BOARD_OFFSET_TOP = publicInterface.SQUARE_SIZE*0.8;
@@ -222,8 +242,9 @@ var FrontEnd = (function(id, customStart, editMode) {
     var e = elements;
     var height = publicInterface.BOARD_OFFSET_TOP + (8*publicInterface.SQUARE_SIZE);
     var width = publicInterface.BOARD_OFFSET_LEFT + (8*publicInterface.SQUARE_SIZE);
-		e.container.style.width = width + "px";
-    e.inner.style.height = height + "px";
+		e.container.style.width = width + 10 +  "px";
+    e.inner.style.height = height + 10 + "px";
+		e.inner.style.width = width + 10 + "px";
     e.boardCanvas.height = height;
     e.boardCanvas.width = width;
   };
@@ -236,8 +257,18 @@ var FrontEnd = (function(id, customStart, editMode) {
   };
 
 	var writeControlsHtml = function() {
-		var div = elements.controls;
-		createGameControls(div, publicInterface, engineInterface);
+		var e = elements;
+		var controlsDiv = e.controls;
+		createGameControls(controlsDiv, publicInterface, engineInterface);
+		var width = e.inner.style.width;
+		controlsDiv.style.width = width;
+
+		var loggingDiv = e.logging;
+		loggingDiv.output =  createLoggingControls(loggingDiv);
+		var loggingWidth = 120;
+		loggingDiv.style.width = loggingWidth + "px";
+		loggingDiv.style.height = 300 + "px";
+		e.container.style.width =	parseInt(width.substring(0, (width.length-2))) + loggingWidth + "px";
 	};
 
   /* Auto play timeout verzögert die Züge des Computers,
@@ -264,10 +295,10 @@ var FrontEnd = (function(id, customStart, editMode) {
   var computerMove = function() {
     autoPlayTimeout = undefined;
     var move = engineInterface.computerMove();
-    var timeout = animateMove(move.start, move.target,
+    var timeout = animateMove(move,
         function(engineInterface, refresh, next) {
           return function() {
-            var moveResult = engineInterface.move(move.start, move.target, move.promotion);
+            var moveResult = engineInterface.move(move);
 						refresh();
 						if (moveResult && !engineInterface.isGameOver()) {
 							next();
@@ -289,7 +320,9 @@ var FrontEnd = (function(id, customStart, editMode) {
   //   }
   // };
 
-  var animateMove = function(start, target, callback) {
+  var animateMove = function(move, callback) {
+		var start = move.start;
+		var target = move.target;
     var canvas = elements.boardCanvas;
 		var board = publicInterface.chessboard;
     var fields = board.fields;
@@ -409,16 +442,17 @@ var FrontEnd = (function(id, customStart, editMode) {
 		// create controls
 		var div = elements.controls;
 		var replayControls = createReplayControls(div, publicInterface);
+		initEngine(replay.startFEN);
 		publicInterface.playReplay();
 	}
 
 	var interpretCustomStart = function(customStart) {
-		if (checkForXML(customStart)) {
-			startFromReplay(customStart);
-		} else {
-			initEngine(customStart);
-			players = ["human", "human"];
-			activateBoard();
+		if (customStart != null && customStart != "") {
+			if (checkForXML(customStart)) {
+				startFromReplay(customStart);
+			} else {
+				initEngine(customStart);
+			}
 		}
 	}
 
@@ -433,14 +467,23 @@ var FrontEnd = (function(id, customStart, editMode) {
 		return false;
 	}
 
+	var initEngine = function(customStartFEN) {
+		// prevent empty boards from loading
+		var components = customStartFEN.split(" ");
+		if (components != null && components[0] != null && components[0] != "8/8/8/8/8/8/8/8") {
+			engineInterface.init(customStartFEN);
+		}
+		publicInterface.refresh();
+	};
 
   initFrontend(id);
   renderElements();
   initChessboard();
 
 	if (editMode == undefined || editMode == false) {
-		interpretCustomStart(customStart)
 		writeControlsHtml();
+		activateBoard();
+		interpretCustomStart(customStart);
 	} else if (editMode == true) {
 		enableEditor();
 	}

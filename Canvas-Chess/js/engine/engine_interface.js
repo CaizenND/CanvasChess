@@ -1,5 +1,4 @@
-// TODO: Unsere Engine unterstützt nur eine Instanz Pro Seite?
-var EngineInterface = (function() {
+var EngineInterface = (function(frontEnd) {
 
 	// public Attribute
 	var publicInterface = {};
@@ -10,18 +9,18 @@ var EngineInterface = (function() {
 	var MIN_COMPUTER_LEVEL = 0;
 	var MAX_COMPUTER_LEVEL = 4;
 
-	var engine = null;
+	var engine = p4_new_game();
 	var computerLevel = DEFAULT_COMPUTER_LEVEL;
 	var mate = false;
 	var stale = false;
 	var pawnPromotion = "queen";
 	var PROMOTION_STRINGS = ["queen", "rook", "knight", "bishop"];
+	var frontEnd = frontEnd;
 
 
 	// public Methoden
 	publicInterface.init = function(customState) {
-		engine = p4_new_game();
-		if (customState != "") {
+		if (customState != undefined && customState != null && customState != "") {
 			p4_fen2state(customState, engine);
 		}
 	}
@@ -37,22 +36,21 @@ var EngineInterface = (function() {
 	// 	return pawnPromotion;
 	// }
 
-	publicInterface.move = function(start, target, promotion) {
-		var promotionString = pawnPromotion;
-		if (promotion != null) {
-			promotionString = promotion;
+	publicInterface.move = function(move) {
+		if (move.promotion == null) {
+			move.promotion = pawnPromotion;
 		}
-		var p4Promotion = convertPieceNameToNumber(promotionString);
-		var moveResult = engine.move(start, target, p4Promotion);
+		var p4Promotion = convertPieceNameToNumber(move.promotion);
+		var moveResult = engine.move(move.start, move.target, p4Promotion);
 		if (moveResult.flags == P4_MOVE_CHECKMATE) {
 			mate = true;
 		} else if (moveResult.flags == P4_MOVE_STALEMATE) {
 			stale = true;
 		}
 		if (moveResult.ok) {
+			frontEnd.logMove(moveResult.string, engine.moveno);
 			//this.display_move_text(engine.moveno, moveResult.string);
 			//this.refresh();
-			// P4_MOVE_FLAG_MATE == Patt
 			//if (! (moveResult.flags & P4_MOVE_FLAG_MATE)) {
 				//this.next_move_timeout = window.setTimeout(
 					//function(p4d) {
@@ -62,7 +60,7 @@ var EngineInterface = (function() {
 					//}(this), 1);
 			//}
 		} else {
-			p4_log("bad move!", start, target);
+			p4_log("bad move!", move);
 		}
 		//for (var i = 0; i < this.move_listeners.length; i++) {
 		//		this.move_listeners[i](moveResult);
@@ -186,6 +184,10 @@ var EngineInterface = (function() {
 		&& PROMOTION_STRINGS.indexOf(promotion) <= 3) {
 			pawnPromotion = promotion;
 		}
+	}
+
+	publicInterface.getStartFEN = function() {
+		return engine.beginning;
 	}
 
 	// private Methoden

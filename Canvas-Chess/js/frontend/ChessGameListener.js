@@ -129,7 +129,12 @@ function GameTargetListener(evt) {
         }
 
         if (targetField != null) {
-          var moveResult = this.move(startField.algebraicID, targetField.algebraicID);
+          var move = {
+            start: startField.algebraicID,
+            target: targetField.algebraicID,
+            promotion: null
+          }
+          var moveResult = this.move(move);
         }
       }
 

@@ -1,13 +1,26 @@
 #board-goes-here {
-  /*float: left;*/
   margin: 0 auto;
+}
+
+.inner {
+  float: left;
+}
+
+.logging {
+  float: left;
+  display: flex;
+  flex-direction: column;
+}
+
+.boardCanvas {
+  border: 1px solid rgb(173, 173, 173);
+  -webkit-box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
+  box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
 }
 
 .controls {
   float: left;
   clear: both;
-  /*border: 1px solid red;*/
-  width: 100%;
 }
 
 .category-meta {
@@ -17,12 +30,16 @@
   border-radius: 5px;
 }
 
+
 .category-container {
   float: left;
   clear: both;
   width: 100%;
-  -webkit-box-shadow: rgba(0, 0, 0, 0.121569) 3px 3px 5px 0px inset;
-  box-shadow: rgba(0, 0, 0, 0.121569) 3px 3px 5px 0px inset;
+  /* Bax-shadow sorgt für crash, zumindest in dem scrollbaren logging div */
+  /*
+  -webkit-box-shadow: inset rgba(0, 0, 0, 0.121569) 3px 3px 5px 0px;
+  box-shadow: inset rgba(0, 0, 0, 0.121569) 3px 3px 5px 0px;
+  */
   border-bottom-color: rgb(173, 173, 173);
   border-left-color: rgb(173, 173, 173);
   border-right-color: rgb(173, 173, 173);
@@ -53,6 +70,22 @@
 
 .control-description {
   width: 150px;
+}
+
+.log-move {
+  display: block;
+  width: 80%;
+  height: 25px;
+  border: 2px solid rgba(0, 0, 0, 0);
+  border-radius: 5px;
+  margin: 2px auto;
+  font-size: 20px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.log-move:hover {
+  border-color: rgba(140, 140, 140, 1);
 }
 
 .button-chess {
@@ -96,6 +129,10 @@
   float: left;
 }
 
+.button-sign {
+  width: 50px;
+}
+
 .container-center {
   float: left;
   clear: both;
@@ -137,6 +174,7 @@
   padding-top: 6px;
   text-align: center;
   margin: 5px 0;
+  cursor: pointer;
 }
 
 input[type="radio"].group-input {
@@ -174,6 +212,18 @@ input[type="radio"]:checked + label.radio-option:hover {
 .option-image, .option-text {
   clear: both;
   margin: 0 auto;
+}
+
+.scrollable {
+  overflow: auto;
+}
+
+.flex-solid {
+  flex-shrink: 0;
+}
+
+.flex-grow {
+  flex-grow: 1;
 }
 
 .option-interaction {

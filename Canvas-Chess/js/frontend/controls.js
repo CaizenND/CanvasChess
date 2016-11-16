@@ -6,7 +6,7 @@ var createMetaAndContainer = function(parentElement, title) {
   container.style.display = "block";
   container.meta = categoryMeta;
 
-  var buttonCollapse = createNewChild(categoryMeta, "button", "button-chess button-float");
+  var buttonCollapse = createNewChild(categoryMeta, "button", "button-chess button-float button-sign");
   buttonCollapse.appendChild(document.createTextNode("-"));
 
   buttonCollapse.onclick = (function(element) {
@@ -178,13 +178,13 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
   var difficultyDescription = createNewChild(container, "div", "control-description");
   difficultyDescription.appendChild(document.createTextNode("AI difficulty"));
 
-  var buttonDecrease = createNewChild(container, "button", "button-chess button-float");
+  var buttonDecrease = createNewChild(container, "button", "button-chess button-float button-sign");
   buttonDecrease.appendChild(document.createTextNode("-"));
 
   var difficultyLabel = createNewChild(container, "div", "control-text");
   difficultyLabel.appendChild(document.createTextNode(engineInterface.getComputerLevel()));
 
-  var buttonIncrease = createNewChild(container, "button", "button-chess button-float");
+  var buttonIncrease = createNewChild(container, "button", "button-chess button-float button-sign");
   buttonIncrease.appendChild(document.createTextNode("+"));
 
   buttonDecrease.onclick = (function(engine, label) {
@@ -216,6 +216,15 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
 
   return gameControls;
 };
+
+var createLoggingControls = function(parentElement) {
+  // Container & meta-container (collapse)
+  var loggingControls = createMetaAndContainer(parentElement, "Log");
+  loggingControls.meta.className += " flex-solid"
+  loggingControls.className += " scrollable flex-grow";
+  return loggingControls;
+};
+
 
 var createReplayControls = function(parentElement, frontEnd) {
 
