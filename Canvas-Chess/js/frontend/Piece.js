@@ -1,9 +1,7 @@
-function Piece(pieceColor, pieceType, canvas, chessboard) {
+function Piece(pieceColor, pieceType, chessboard) {
   this.color = pieceColor;
   this.type = pieceType;
-  //this.captured = false;
-  this.canvas = canvas;
-  this.chessboard = chessboard;
+  this.board = chessboard;
   this.image = new Image();
   this.idX = 0;
   this.idY = 0;
@@ -27,9 +25,9 @@ Piece.prototype.setID = function(x, y) {
 }
 
 Piece.prototype.draw = function() {
-  var ctx = this.canvas.getContext("2d");
+  var ctx = this.board.canvas.getContext("2d");
   ctx.save();
-  if (this.chessboard.dragging.draggedPiece == this) {
+  if (this.board.dragging.draggedPiece == this) {
     ctx.shadowColor = "#000000";
     ctx.shadowBlur = 10;
     ctx.shadowOffsetX = 0;

@@ -13,7 +13,7 @@ function EditorStartListener(evt) {
         && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
           board.dragging.dragHoldX = mouseX - piece.posX;
           board.dragging.dragHoldY = mouseY - piece.posY;
-          var newPiece = new Piece(piece.color, piece.type, canvas, board);
+          var newPiece = new Piece(piece.color, piece.type, board);
           newPiece.setPosition(piece.posX, piece.posY);
           newPiece.setSize(piece.size);
           newPiece.setID(piece.idX, piece.idY)
@@ -52,6 +52,7 @@ function EditorStartListener(evt) {
 function EditorMoveListener(evt) {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
+  
   var posX;
   var posY;
   var shapeRad = board.dragging.draggedPiece.size;
@@ -82,7 +83,6 @@ function EditorMoveListener(evt) {
 function EditorTargetListener(evt) {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
-
   var interactionListener = canvas.interactionListener;
 
   if (interactionListener.startEvent != evt) {
@@ -132,7 +132,7 @@ function EditorTargetListener(evt) {
   interactionListener.startEvent = null;
 
   board.dragging.draggedPiece = null;
-  this.canvas.draw();
+  canvas.draw();
   this.checkRochade();
 
   return false;

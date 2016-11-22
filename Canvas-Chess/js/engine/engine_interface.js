@@ -1,20 +1,23 @@
 var EngineInterface = (function(frontEnd) {
 
 	// public Attribute
-	var publicInterface = {};
+	var publicInterface = {
+		MIN_COMPUTER_LEVEL : 0,
+		MAX_COMPUTER_LEVEL : 4,
+		PROMOTION_STRINGS : ["queen", "rook", "knight", "bishop"]
+	};
 	// var PROMOTION_INTS = [P4_QUEEN, P4_ROOK, P4_KNIGHT, P4_BISHOP];
 
 	// private Attribute
 	var DEFAULT_COMPUTER_LEVEL = 2; // 0 - 4
-	var MIN_COMPUTER_LEVEL = 0;
-	var MAX_COMPUTER_LEVEL = 4;
+
 
 	var engine = p4_new_game();
 	var computerLevel = DEFAULT_COMPUTER_LEVEL;
 	var mate = false;
 	var stale = false;
 	var pawnPromotion = "queen";
-	var PROMOTION_STRINGS = ["queen", "rook", "knight", "bishop"];
+
 	var frontEnd = frontEnd;
 
 
@@ -24,17 +27,6 @@ var EngineInterface = (function(frontEnd) {
 			p4_fen2state(customState, engine);
 		}
 	}
-
-	// publicInterface.setPawnPromotion = function(promotion) {
-	// 	var p4Promotion = convertPieceNameToNumber(promotion);
-	// 	if(p4Promotion >= 0 && p4Promotion < publicInterface.PROMOTION_INTS.length) {
-	// 		pawnPromotion = p4Promotion;
-	// 	}
-	// }
-
-	// publicInterface.getPawnPromotion = function() {
-	// 	return pawnPromotion;
-	// }
 
 	publicInterface.move = function(move) {
 		if (move.promotion == null) {
@@ -161,30 +153,40 @@ var EngineInterface = (function(frontEnd) {
 		return moves;
 	}
 
+	publicInterface.setComputerLevel = function(level) {
+		if (level >= this.MIN_COMPUTER_LEVEL && level <= this.MAX_COMPUTER_LEVEL) {
+			computerLevel = level;
+		}
+	}
+
 	publicInterface.getComputerLevel = function() {
 		return computerLevel;
 	}
 
 	publicInterface.increaseComputerLevel = function() {
-		if (computerLevel < MAX_COMPUTER_LEVEL) {
+		if (computerLevel < this.MAX_COMPUTER_LEVEL) {
 			computerLevel++;
 		}
 		return computerLevel;
 	}
 
 	publicInterface.decreaseComputerLevel = function() {
-		if (computerLevel > MIN_COMPUTER_LEVEL) {
+		if (computerLevel > this.MIN_COMPUTER_LEVEL) {
 			computerLevel--;
 		}
 		return computerLevel;
 	}
 
 	publicInterface.setPawnPromotion = function(promotion) {
-		if (promotion != null && PROMOTION_STRINGS.indexOf(promotion) >= 0
-		&& PROMOTION_STRINGS.indexOf(promotion) <= 3) {
+		if (promotion != null && this.PROMOTION_STRINGS.indexOf(promotion) >= 0
+		&& this.PROMOTION_STRINGS.indexOf(promotion) <= 3) {
 			pawnPromotion = promotion;
 		}
 	}
+
+	// publicInterface.getPawnPromotion = function() {
+	// 	return pawnPromotion;
+	// }
 
 	publicInterface.getStartFEN = function() {
 		return engine.beginning;

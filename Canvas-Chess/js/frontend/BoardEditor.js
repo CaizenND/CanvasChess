@@ -1,25 +1,28 @@
-function BoardEditor(canvas, frontEnd, frontEndControls) {
-  this.canvas = canvas;
+function BoardEditor(frontEnd, frontEndControls) {
   this.frontEnd = frontEnd;
-  this.pieces = [];
-  this.width = this.frontEnd.CANVAS_OFFSET_LEFT;
-  this.height = this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 8);
+  var board = this.frontEnd.chessboard;
+  var canvas = board.canvas;
   this.frontEndControls = frontEndControls;
-  this.controls = null;
+  this.controls = createEditorControls(frontEndControls, this);
+
+  board.CANVAS_OFFSET_LEFT = 2 * board.SQUARE_SIZE;
+  board.setup();
+  board.loadBoard(null);
+  canvas.addDrawableObject(this, true);
 
   this.buildPieces();
 
-  this.controls = createEditorControls(frontEndControls, this);
   this.checkRochade();
+
   // mouse Listener
-  this.canvas.interactionListener.startListener = EditorStartListener.bind(this);
-  this.canvas.addEventListener("mouseup", this.canvas.interactionListener.startListener, false);
+  canvas.interactionListener.startListener = EditorStartListener.bind(this);
+  canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
 };
 
 BoardEditor.prototype.destroyControls = function() {
+  var canvas = frontEnd.chessboard.canvas;
   this.frontEndControls.removeChild(this.controls.meta);
   this.frontEndControls.removeChild(this.controls);
-  var canvas = this.frontEnd.chessboard.canvas;
   var interactionListener = canvas.interactionListener;
   canvas.removeEventListener("mouseup", interactionListener.startListener, false);
   canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
@@ -28,68 +31,70 @@ BoardEditor.prototype.destroyControls = function() {
 
 BoardEditor.prototype.buildPieces = function() {
   var board = this.frontEnd.chessboard;
-  var currentPiece = new Piece("black", "pawn", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 0.1));
+  var canvas = board.canvas;
+  this.pieces = [];
+  var currentPiece = new Piece("black", "pawn", board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 0.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 0.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "rook", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 0.1));
+  currentPiece = new Piece("black", "rook", board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 1.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 0.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "knight", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 1.1));
+  currentPiece = new Piece("black", "knight",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 0.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 1.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "bishop", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 1.1));
+  currentPiece = new Piece("black", "bishop",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 1.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 1.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "queen", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 2.1));
+  currentPiece = new Piece("black", "queen",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 0.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 2.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("black", "king", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 2.1));
+  currentPiece = new Piece("black", "king",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 1.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 2.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "pawn", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 5.1));
+  currentPiece = new Piece("white", "pawn",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 0.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 5.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "rook", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 5.1));
+  currentPiece = new Piece("white", "rook",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 1.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 5.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "knight", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 6.1));
+  currentPiece = new Piece("white", "knight",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 0.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 6.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "bishop", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 6.1));
+  currentPiece = new Piece("white", "bishop",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 1.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 6.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "queen", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 0.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 7.1));
+  currentPiece = new Piece("white", "queen",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 0.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 7.1));
   this.pieces.push(currentPiece);
 
-  currentPiece = new Piece("white", "king", this.canvas, board);
-  currentPiece.setPosition(this.frontEnd.SQUARE_SIZE * 1.1,
-    this.frontEnd.CANVAS_OFFSET_TOP + this.frontEnd.BOARD_OFFSET_TOP + (this.frontEnd.SQUARE_SIZE * 7.1));
+  currentPiece = new Piece("white", "king",  board);
+  currentPiece.setPosition(board.SQUARE_SIZE * 1.1,
+    board.CANVAS_OFFSET_TOP + board.BOARD_OFFSET_TOP + (board.SQUARE_SIZE * 7.1));
   this.pieces.push(currentPiece);
 
   for (var i = 0; i < this.pieces.length; i++) {
-    this.pieces[i].setSize(this.frontEnd.SQUARE_SIZE * 0.8);
+    this.pieces[i].setSize(board.SQUARE_SIZE * 0.8);
     this.pieces[i].setID(-1, -1);
     this.pieces[i].loadImage();
   }
@@ -203,6 +208,8 @@ BoardEditor.prototype.draw = function() {
 };
 
 BoardEditor.prototype.exportFEN = function() {
+  var board = this.frontEnd.chessboard;
+  var canvas = board.canvas;
   // Piece placement
   var pieceFEN = this.getPiecePlacementFEN();
   // Active player
@@ -220,6 +227,8 @@ BoardEditor.prototype.exportFEN = function() {
   var fullmoveFEN = " 1";
   var fen = pieceFEN + activeFEN + rochadeFEN + enPassantFEN + halfmoveFEN + fullmoveFEN;
   this.destroyControls();
+  canvas.removeDrawableObject(this);
+  board.CANVAS_OFFSET_LEFT = 0;
   this.frontEnd.editorCustomStart(fen);
 };
 

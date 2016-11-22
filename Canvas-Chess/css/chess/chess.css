@@ -1,9 +1,19 @@
-#board-goes-here {
+.chess {
   margin: 0 auto;
+}
+
+.chess:after {
+  clear: both;
+  content: "";
+  display: block;
 }
 
 .inner {
   float: left;
+}
+
+.boardCanvas {
+  cursor: pointer;
 }
 
 .logging {
@@ -58,7 +68,12 @@
   float: left;
   clear: both;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+}
+
+.container-center {
+  width: 100%;
 }
 
 .control-description, .control-text {
@@ -95,7 +110,7 @@
   margin: 5px;
   cursor: pointer;
   border: 1px solid #bbb;
-  overflow: visible;
+  /*overflow: visible;*/
   font: bold 13px arial, helvetica, sans-serif;
   text-decoration: none;
   white-space: nowrap;
@@ -133,13 +148,7 @@
   width: 50px;
 }
 
-.container-center {
-  float: left;
-  clear: both;
-  width: 100%;
-}
-
-.button-center {
+.item-center {
   display: block;
   margin: 5px auto;
 }
@@ -249,6 +258,7 @@ progress[value] {
   width: 250px;
   height: 25px;
   float: left;
+  display: block;
 }
 
 progress[value]::-webkit-progress-bar {

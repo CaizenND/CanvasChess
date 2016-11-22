@@ -66,6 +66,7 @@ function GameStartListenerUp(evt) {
 function GameMoveListener(evt) {
   var board = this.chessboard;
   var canvas = board.canvas;
+
   var posX;
   var posY;
   var shapeRad = board.dragging.draggedPiece.size;
@@ -138,19 +139,8 @@ function GameTargetListener(evt) {
         }
       }
 
-    canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
-    interactionListener.moveListener = null;
-    canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
-    interactionListener.targetListener = null;
-    if (this.interactionMode == 1) {
-      interactionListener.startListener = GameStartListenerDown.bind(this);
-      canvas.addEventListener("mousedown", canvas.interactionListener.startListener, false);
-    } else if (this.interactionMode == 2) {
-      interactionListener.startListener = GameStartListenerUp.bind(this);
-      canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
-    }
-    interactionListener.startEvent = null;
     board.dragging.draggedPiece = null;
+    this.activateBoard();
     this.refresh();
   }
 

@@ -1,5 +1,5 @@
-function Field(canvas) {
-  this.canvas = canvas;
+function Field(chessboard) {
+  this.canvas = chessboard.canvas;
   this.piece = null;
   this.algebraicID = "";
   this.idX = 0;

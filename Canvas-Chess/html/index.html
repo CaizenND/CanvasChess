@@ -5,7 +5,6 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
-<link rel="stylesheet" href="../css/chess/p4wn.css"/>
 <link rel="stylesheet" href="../css/chess/chess.css"/>
 
 <script src="../js/engine/engine.js"></script>
@@ -19,6 +18,9 @@
 <script src="../js/frontend/BoardEditor.js"></script>
 <script src="../js/frontend/ChessEditorListener.js"></script>
 <script src="../js/frontend/controls.js"></script>
+<script src="../js/frontend/configurationManager.js"></script>
+<script src="../js/frontend/configuration.js"></script>
+
 
 <script src="../js/tools/Tools.js"></script>
 
@@ -28,25 +30,28 @@
 <!-- Put anything you like here... -->
 
 <div id="board-goes-here"></div>
-
+<script>
+var ARGUMENTS = "";
+// ACHTUNG: Zug (letzte Zahl) = 1, sonst kein undo möglich !!!!!!!!!!!
+//Gibt eine vordefinierte Situation vor (https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation):
+// ARGUMENTS += "startFEN:rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1;";
+// ARGUMENTS += "startFEN:k7/1Q6/6K1/3Q4/6Q1/4q3/8/8 b - - 0 1;";
+// ARGUMENTS += "startFEN:8/4PPPP/7K/8/8/k7/pppp4/8 w - - 0 1;";
+// ARGUMENTS += "startFEN:5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10;";
+// ARGUMENTS += "replay:../replay.xml;";
+// ARGUMENTS += "replay:../replay_short.xml;";
+// ARGUMENTS += "config:minimal;";
+// ARGUMENTS += "size:60;";
+// ARGUMENTS += "players:computer,computer;";
+// ARGUMENTS += "interaction:1;";
+// ARGUMENTS += "promotion:rook;";
+// ARGUMENTS += "difficulty:1;";
+// ARGUMENTS += "editor;";
+var frontEnd = new FrontEnd("board-goes-here", ARGUMENTS);
+</script>
 
 <!-- ...and here -->
 
-
-
-<script>
-// ACHTUNG: Zug (letzte Zahl) = 1, sonst kein undo möglich !!!!!!!!!!!
-//Gibt eine vordefinierte Situation vor (https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation):
-CUSTOM_START = null;
-// CUSTOM_START = "5bnr/4p1pq/4Qpkr/7p/2P4P/8/PP1PPPP1/RNB1KBNR w KQ - 0 10";
-// CUSTOM_START = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-// CUSTOM_START = "8/4PPPP/7K/8/8/k7/pppp4/8 w - - 0 1";
-// CUSTOM_START = "k7/1Q6/6K1/3Q4/6Q1/4q3/8/8 b - - 0 1";
-CUSTOM_START = "../replay_short.xml";
-var frontEnd = new FrontEnd("board-goes-here", CUSTOM_START, false);
-// frontEnd.startFromReplay("../replay_short.xml");
-
-</script>
 <!-- Uncomment if you like to optimize to screen resolution -->
 <!-- script src="resolutionawareness.js"></script -->
 </body>
