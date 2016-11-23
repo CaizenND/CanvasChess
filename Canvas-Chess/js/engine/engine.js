@@ -747,6 +747,61 @@ function p4_findmove(state, level, colour, ep){
     return [bs, be, alpha];
 }
 
+// TODO: nicht standardmäßig in Engine BEGIN
+var p4_findBestXmoves = function(state, level, x, colour, ep) {
+  p4_prepare(state);
+  p4_optimise_piece_list(state);
+  var board = state.board;
+  if (arguments.length == 3){
+      colour = state.to_play;
+      ep = state.enpassant;
+  }
+  var movelist = p4_parse(state, colour, ep, 0);
+  var alpha = P4_MIN_SCORE;
+  var mv, t, i;
+  var bs = 0;
+  var be = 0;
+
+  var bestMoves = [];
+  var sortFunction = function(a, b) {
+    return (-1) * (a.score - b.score);
+  }
+
+  if (level <= 0){
+      for (i = 0; i < movelist.length; i++){
+          mv = movelist[i];
+          var move = {
+            start: mv[1],
+            target: mv[2],
+            score: mv[0]
+          }
+          bestMoves.push(move)
+      }
+      bestMoves.sort(sortFunction);
+      bestMoves = bestMoves.slice(0, x);
+      return bestMoves;
+  }
+
+  for(i = 0; i < movelist.length; i++){
+      mv = movelist[i];
+      var mscore = mv[0];
+      var ms = mv[1];
+      var me = mv[2];
+      t = -state.treeclimber(state, level - 1, 1 - colour, mscore, ms, me,
+                             P4_MIN_SCORE, -alpha);
+      var move = {
+        start: ms,
+        target: me,
+        score: t
+      }
+      bestMoves.push(move)
+  }
+  bestMoves.sort(sortFunction);
+  bestMoves = bestMoves.slice(0, x);
+  return bestMoves;
+}
+// TODO: nicht standardmäßig in Engine END
+
 /*p4_make_move changes the state and returns an object containing
  * everything necesary to undo the change.
  *
@@ -1337,6 +1392,11 @@ function p4_fen2state(fen, state){
     state.findmove = function(level){
         return p4_findmove(this, level);
     };
+    // TODO: nicht standardmäßig in Engine BEGIN
+    state.findBestXMoves = function(level, x) {
+        return p4_findBestXmoves(this, level, x);
+    };
+    // TODO: nicht standardmäßig in Engine END
     state.jump_to_moveno = function(moveno){
         return p4_jump_to_moveno(this, moveno);
     };

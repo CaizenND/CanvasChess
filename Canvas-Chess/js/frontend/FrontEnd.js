@@ -34,6 +34,9 @@ var FrontEnd = (function(id, argumentString) {
 
   // public Methoden
 	publicInterface.move = function(move) {
+		if (engineInterface.getFeedback != undefined) {
+			console.log(engineInterface.getFeedback(move));
+		}
     var moveResult = engineInterface.move(move);
     if (moveResult && !engineInterface.isGameOver()) {
       this.nextMove_timeout = window.setTimeout(
@@ -251,26 +254,29 @@ var FrontEnd = (function(id, argumentString) {
   };
 
 	var processArgumentString = function() {
-		var argumentList = argumentString.split(";");
 		var editor = false;
 		var difficulty = null;
 		var interaction = null;
 		var defaultAI = null;
 		var promotion = null;
 		var startFEN = "";
-		for (var i = 0; i < argumentList.length; i++) {
-			var argument = argumentList[i].split(":");
-			switch (argument[0]) {
-				case "config": argumentConfig(argument[1]); break;
-				case "editor": editor = true; break;
-				case "difficulty": difficulty = argumentDifficulty(argument[1]); break;
-				case "interaction": interaction = argumentInteraction(argument[1]); break;
-				case "players": defaultAI = argumentsPlayers(argument[1]); break;
-				case "promotion": promotion = argumentPromotion(argument[1]); break;
-				case "replay": argumentReplay(argument[1]); break;
-				case "size": argumemntSize(argument[1]); break;
-				case "startFEN": startFEN = argument[1]; break;
-				default: break;
+
+		if (argumentString != undefined && argumentString != null) {
+			var argumentList = argumentString.split(";");
+			for (var i = 0; i < argumentList.length; i++) {
+				var argument = argumentList[i].split(":");
+				switch (argument[0]) {
+					case "config": argumentConfig(argument[1]); break;
+					case "editor": editor = true; break;
+					case "difficulty": difficulty = argumentDifficulty(argument[1]); break;
+					case "interaction": interaction = argumentInteraction(argument[1]); break;
+					case "players": defaultAI = argumentsPlayers(argument[1]); break;
+					case "promotion": promotion = argumentPromotion(argument[1]); break;
+					case "replay": argumentReplay(argument[1]); break;
+					case "size": argumemntSize(argument[1]); break;
+					case "startFEN": startFEN = argument[1]; break;
+					default: break;
+				}
 			}
 		}
 

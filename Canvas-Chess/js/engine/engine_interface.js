@@ -95,6 +95,33 @@ var EngineInterface = (function(frontEnd) {
 		return move;
 	}
 
+	publicInterface.getFeedback = function(move) {
+		console.log(move);
+		var bestMoves;
+		var feedback = "";
+		var highscore = "";
+		var playerRating = -1;
+		var depth = computerLevel + 1;
+		var topX = 5;
+		bestMoves = engine.findBestXMoves(depth, topX);
+		for (var i = 0; i < bestMoves.length; i++) {
+			bestMoves[i].start = convertBoardNotation(bestMoves[i].start);
+			bestMoves[i].target = convertBoardNotation(bestMoves[i].target);
+			if (move.start == bestMoves[i].start && move.target == bestMoves[i].target) {
+				playerRating = (i+1);
+			}
+			highscore += (i+1) + ". " + bestMoves[i].start + " - " + bestMoves[i].target +
+			" (" + bestMoves[i].score + ")\n";
+		}
+		if (playerRating > 0) {
+			feedback += "The engine rated your move as the " + playerRating + ". best move." +
+			" (Based on a search depth of " + depth + ")\n";
+		} else {
+			feedback += "Your move is not in the top " + topX + " moves.\n";
+		}
+		return feedback + highscore;
+	}
+
 	publicInterface.getBoard = function() {
 		var p4wnBoard = engine.board;
 		var normalizedBoard = new Array(8);
