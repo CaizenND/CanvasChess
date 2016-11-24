@@ -13,6 +13,9 @@
 }
 
 .boardCanvas {
+  border: 1px solid rgb(173, 173, 173);
+  -webkit-box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
+  box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
   cursor: pointer;
 }
 
@@ -22,15 +25,19 @@
   flex-direction: column;
 }
 
-.boardCanvas {
-  border: 1px solid rgb(173, 173, 173);
-  -webkit-box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
-  box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
-}
-
-.controls {
+.feedback, .controls {
   float: left;
   clear: both;
+}
+
+.feedback-container {
+  white-space: pre-wrap;
+  font-size: 20px;
+  float: left;
+  clear: both;
+  width: 100%;
+  border: 1px solid rgb(173, 173, 173);
+  border-radius: 5px;
 }
 
 .category-meta {
@@ -95,6 +102,7 @@
   border-radius: 5px;
   margin: 2px auto;
   font-size: 20px;
+  white-space: pre-wrap;
   text-align: center;
   cursor: pointer;
 }

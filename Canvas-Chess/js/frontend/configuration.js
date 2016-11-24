@@ -1,5 +1,6 @@
 var Configuration = function() {
-  this.name = "default";
+  this.name = undefined;
+  this.size = 55; // >55
   this.showInteractionMode = true;
   this.defaultInteractionMode = 2; // 1, 2
   this.showPawnPromotion = true;
@@ -12,9 +13,11 @@ var Configuration = function() {
   this.showExport = true;
   this.showLogging = true;
   this.allowLoggingInteraction = true;
+  this.showFeedback = true;
 }
 
 var defaultConfiguration = new Configuration();
+defaultConfiguration.name = "default";
 ConfigurationManager.addConfiguration(defaultConfiguration);
 
 var minimalConfiguration = new Configuration();

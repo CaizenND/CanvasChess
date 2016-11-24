@@ -15,15 +15,6 @@ var FrontEnd = (function(id, argumentString) {
 
 	var boardEditor = {};
 
-	// TODO: braucht man die überhaupt?
-	var INNER_DIV_CLASS = "inner";
-
-  var BOARD_CANVAS_CLASS = "boardCanvas";
-
-	var LOGGING_DIV_CLASS = "logging";
-
-  var CONTROL_DIV_CLASS = "controls";
-
   var elements = {};
 
   var players = ["human", "human"]; //[white, black] controllers - "human", "computer"
@@ -34,9 +25,17 @@ var FrontEnd = (function(id, argumentString) {
 
   // public Methoden
 	publicInterface.move = function(move) {
-		if (engineInterface.getFeedback != undefined) {
-			console.log(engineInterface.getFeedback(move));
+		// log feedback
+		if (engineInterface.getFeedback != undefined && publicInterface.configuration.showFeedback) {
+			var feedbackLog = elements.feedback;
+			var feedback = engineInterface.getFeedback(move);
+			while (feedbackLog.firstChild) {
+    		feedbackLog.removeChild(feedbackLog.firstChild);
+			}
+			var feedbackEntry = createNewChild(feedbackLog, "div", "feedback-container");
+			feedbackEntry.appendChild(document.createTextNode(feedback));
 		}
+		// make move
     var moveResult = engineInterface.move(move);
     if (moveResult && !engineInterface.isGameOver()) {
       this.nextMove_timeout = window.setTimeout(
@@ -202,14 +201,15 @@ var FrontEnd = (function(id, argumentString) {
     } else {
       container = target;
     }
-    var inner = createNewChild(container, "div", INNER_DIV_CLASS);
+    var inner = createNewChild(container, "div", "inner");
     elements.inner = inner;
     elements.container = container;
 		elements.container.className = "chess";
-    elements.boardCanvas = createNewChild(inner, "canvas", BOARD_CANVAS_CLASS);
-		elements.logging = createNewChild(container, "div", LOGGING_DIV_CLASS);
+    elements.boardCanvas = createNewChild(inner, "canvas", "boardCanvas");
 		prepareCanvas();
-    elements.controls = createNewChild(container, "div", CONTROL_DIV_CLASS);
+		elements.logging = createNewChild(container, "div", "logging");
+		elements.feedback = createNewChild(container, "div", "feedback");
+    elements.controls = createNewChild(container, "div", "controls");
   };
 
 	var prepareCanvas = function() {
@@ -259,6 +259,7 @@ var FrontEnd = (function(id, argumentString) {
 		var interaction = null;
 		var defaultAI = null;
 		var promotion = null;
+		var size = null;
 		var startFEN = "";
 
 		if (argumentString != undefined && argumentString != null) {
@@ -273,7 +274,7 @@ var FrontEnd = (function(id, argumentString) {
 					case "players": defaultAI = argumentsPlayers(argument[1]); break;
 					case "promotion": promotion = argumentPromotion(argument[1]); break;
 					case "replay": argumentReplay(argument[1]); break;
-					case "size": argumemntSize(argument[1]); break;
+					case "size": size = argumemntSize(argument[1]); break;
 					case "startFEN": startFEN = argument[1]; break;
 					default: break;
 				}
@@ -284,28 +285,35 @@ var FrontEnd = (function(id, argumentString) {
 			publicInterface.configuration = ConfigurationManager.getConfiguration("default");
 		}
 
+		var config = publicInterface.configuration;
+
 		if (difficulty != null) {
-			publicInterface.configuration.defaultDifficulty = difficulty;
+			config.defaultDifficulty = difficulty;
 		}
-		engineInterface.setComputerLevel(publicInterface.configuration.defaultDifficulty);
+		engineInterface.setComputerLevel(config.defaultDifficulty);
 
 		if (interaction != null) {
-			publicInterface.configuration.defaultInteractionMode = interaction;
+			config.defaultInteractionMode = interaction;
 		}
-		interactionMode = publicInterface.configuration.defaultInteractionMode;
+		interactionMode = config.defaultInteractionMode;
 
 		if (promotion != null) {
-			publicInterface.configuration.defaultPawnPromotion = promotion;
+			config.defaultPawnPromotion = promotion;
 		}
-		engineInterface.setPawnPromotion(publicInterface.configuration.defaultPawnPromotion);
+		engineInterface.setPawnPromotion(config.defaultPawnPromotion);
+
+		if (size != null) {
+			config.size = size;
+		}
+		publicInterface.chessboard.SQUARE_SIZE = config.size;
 
 		if (editor) {
 			enableEditor();
 		} else {
 			if (defaultAI != null) {
-				publicInterface.configuration.defaultAI = defaultAI;
+				config.defaultAI = defaultAI;
 			}
-			players = publicInterface.configuration.defaultAI;
+			players = config.defaultAI;
 			renderElements();
 			writeControlsHtml();
 			if (replay != null) {
@@ -367,7 +375,7 @@ var FrontEnd = (function(id, argumentString) {
 	var argumemntSize = function(value) {
 		var size = parseInt(value);
 		if (size >= 55) {
-			publicInterface.chessboard.SQUARE_SIZE = parseInt(size);
+			return size;
 		}
 	}
 
@@ -408,6 +416,7 @@ var FrontEnd = (function(id, argumentString) {
 		e.inner.style.width = width + 10 + "px";
     e.boardCanvas.height = height;
     e.boardCanvas.width = width;
+		e.feedback.style.width = width + "px";
 		e.controls.style.width = width + "px";
 
 		if (e.logging.output != undefined) {
@@ -588,7 +597,7 @@ var FrontEnd = (function(id, argumentString) {
   //   }
   // };
 
-	// Constructor
+	// Konstruktor
 	initFrontend(id);
 	initChessboard();
 	processArgumentString();

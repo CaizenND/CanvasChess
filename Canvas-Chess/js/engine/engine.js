@@ -748,11 +748,11 @@ function p4_findmove(state, level, colour, ep){
 }
 
 // TODO: nicht standardmäßig in Engine BEGIN
-var p4_findBestXmoves = function(state, level, x, colour, ep) {
+var p4_getRatedPossibleMoves = function(state, level, colour, ep) {
   p4_prepare(state);
   p4_optimise_piece_list(state);
   var board = state.board;
-  if (arguments.length == 3){
+  if (arguments.length == 2){
       colour = state.to_play;
       ep = state.enpassant;
   }
@@ -778,7 +778,6 @@ var p4_findBestXmoves = function(state, level, x, colour, ep) {
           bestMoves.push(move)
       }
       bestMoves.sort(sortFunction);
-      bestMoves = bestMoves.slice(0, x);
       return bestMoves;
   }
 
@@ -797,7 +796,6 @@ var p4_findBestXmoves = function(state, level, x, colour, ep) {
       bestMoves.push(move)
   }
   bestMoves.sort(sortFunction);
-  bestMoves = bestMoves.slice(0, x);
   return bestMoves;
 }
 // TODO: nicht standardmäßig in Engine END
@@ -1393,8 +1391,8 @@ function p4_fen2state(fen, state){
         return p4_findmove(this, level);
     };
     // TODO: nicht standardmäßig in Engine BEGIN
-    state.findBestXMoves = function(level, x) {
-        return p4_findBestXmoves(this, level, x);
+    state.getRatedPossibleMoves = function(level) {
+        return p4_getRatedPossibleMoves(this, level);
     };
     // TODO: nicht standardmäßig in Engine END
     state.jump_to_moveno = function(moveno){

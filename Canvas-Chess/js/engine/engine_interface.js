@@ -95,29 +95,40 @@ var EngineInterface = (function(frontEnd) {
 		return move;
 	}
 
+	/* Engine benutzt Werte, kleiner als der Wert eines Bauern,
+	um zwischen ansonsten gleichwertigen Zügen zu unterscheiden.
+	So können bestimmte Strategien verfolgt oder eine gewisse
+	"Unvorherseebarkeit" simuliert werden */
 	publicInterface.getFeedback = function(move) {
-		console.log(move);
 		var bestMoves;
 		var feedback = "";
 		var highscore = "";
-		var playerRating = -1;
+		var playerPlace = -1;
+		var playerRating = null;
 		var depth = computerLevel + 1;
 		var topX = 5;
-		bestMoves = engine.findBestXMoves(depth, topX);
+		bestMoves = engine.getRatedPossibleMoves(depth);
 		for (var i = 0; i < bestMoves.length; i++) {
 			bestMoves[i].start = convertBoardNotation(bestMoves[i].start);
 			bestMoves[i].target = convertBoardNotation(bestMoves[i].target);
 			if (move.start == bestMoves[i].start && move.target == bestMoves[i].target) {
-				playerRating = (i+1);
+				playerPlace = (i+1);
+				playerRating = bestMoves[i].score;
 			}
-			highscore += (i+1) + ". " + bestMoves[i].start + " - " + bestMoves[i].target +
-			" (" + bestMoves[i].score + ")\n";
+			if ((i+1) <= topX) {
+				highscore += (i+1) + ". " + bestMoves[i].start + " - " +
+					bestMoves[i].target + " (" + bestMoves[i].score + ")\n";
+			}
 		}
-		if (playerRating > 0) {
-			feedback += "The engine rated your move as the " + playerRating + ". best move." +
-			" (Based on a search depth of " + depth + ")\n";
+
+		var ratedMove = "(" + move.start + " - " + move.target +	" | Rating: " +
+			playerRating + ")";
+		if (playerPlace <= topX) {
+			feedback += "The engine rated your move " + ratedMove + " as the " +
+				playerPlace + ". best move. (Based on a search depth of " + depth + ")\n";
 		} else {
-			feedback += "Your move is not in the top " + topX + " moves.\n";
+			feedback += "Your move " + ratedMove + " is not in the top " + topX +
+				" moves.\n";
 		}
 		return feedback + highscore;
 	}
