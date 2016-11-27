@@ -101,7 +101,6 @@ var EngineInterface = (function(frontEnd) {
 	"Unvorherseebarkeit" simuliert werden */
 	publicInterface.getFeedback = function(move) {
 		var bestMoves;
-		var feedback = "";
 		var highscore = "";
 		var playerPlace = -1;
 		var playerRating = null;
@@ -120,7 +119,12 @@ var EngineInterface = (function(frontEnd) {
 					bestMoves[i].target + " (" + bestMoves[i].score + ")\n";
 			}
 		}
+		
+		if (playerPlace == -1) {
+			return "Illegal move.";
+		}
 
+		var feedback = "";
 		var ratedMove = "(" + move.start + " - " + move.target +	" | Rating: " +
 			playerRating + ")";
 		if (playerPlace <= topX) {
