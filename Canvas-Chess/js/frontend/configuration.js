@@ -14,6 +14,7 @@ var Configuration = function() {
   this.showLogging = true;
   this.allowLoggingInteraction = true;
   this.showFeedback = true;
+  this.showEditor = false;
 }
 
 var defaultConfiguration = new Configuration();
@@ -28,17 +29,7 @@ minimalConfiguration.showExport = false;
 minimalConfiguration.showLogging = false;
 ConfigurationManager.addConfiguration(minimalConfiguration);
 
-var testConfigA = new Configuration();
-testConfigA.name = "testA";
-testConfigA.defaultInteractionMode = 1; // 1, 2
-testConfigA.defaultPawnPromotion = "rook"; // queen, rook, knight, bishop
-testConfigA.defaultAI = ["human", "computer"]; //[white, black] - human, computer
-testConfigA.defaultDifficulty = 3;
-testConfigA.allowLoggingInteraction = false;
-ConfigurationManager.addConfiguration(testConfigA);
-
-var testConfigB = new Configuration();
-testConfigB.name = "testB";
-testConfigB.showAISelect = false
-testConfigB.defaultAI = ["computer", "computer"]; //[white, black] - human, computer
-ConfigurationManager.addConfiguration(testConfigB);
+var EditorConfiguration = new Configuration();
+EditorConfiguration.name = "editor";
+EditorConfiguration.showEditor = true;
+ConfigurationManager.addConfiguration(EditorConfiguration);

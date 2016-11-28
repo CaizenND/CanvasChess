@@ -308,6 +308,10 @@ var FrontEnd = (function(id, argumentString) {
 		publicInterface.chessboard.SQUARE_SIZE = config.size;
 
 		if (editor) {
+			config.showEditor = true;
+		}
+
+		if (config.showEditor) {
 			enableEditor();
 		} else {
 			if (defaultAI != null) {
