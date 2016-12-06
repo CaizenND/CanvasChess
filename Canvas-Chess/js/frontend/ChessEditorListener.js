@@ -1,3 +1,13 @@
+
+/**
+ * Mouse-up listener
+ * Tries to find the clicked piece (from the editor- or the chessboard-area) and
+ * marks it as dragged. Creates a new piece objekt and adds it to the chessboard
+ * if piece in editor area was clicked.
+ * Note: "this" has to be binded to the boardeditor objekt.
+ * @param evt   Mouse event that triggered the listener
+ * @return false
+ */
 function EditorStartListener(evt) {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
@@ -16,7 +26,6 @@ function EditorStartListener(evt) {
           var newPiece = new Piece(piece.color, piece.type, board);
           newPiece.setPosition(piece.posX, piece.posY);
           newPiece.setSize(piece.size);
-          newPiece.setID(piece.idX, piece.idY)
           newPiece.loadImage();
           board.dragging.draggedPiece = newPiece;
       }
@@ -47,12 +56,20 @@ function EditorStartListener(evt) {
   }
 
   return false;
-}
+};
 
+/**
+ * Mouse-move listener
+ * Recalculates the position of the dragged piece.
+ * Triggers a redraw of the canvas.
+ * Note: "this" has to be binded to the boardeditor objekt.
+ * @param evt   Mouse event that triggered the listener
+ * @return false
+ */
 function EditorMoveListener(evt) {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
-  
+
   var posX;
   var posY;
   var shapeRad = board.dragging.draggedPiece.size;
@@ -78,8 +95,19 @@ function EditorMoveListener(evt) {
   canvas.draw()
 
   return false;
-}
+};
 
+/**
+ * Mouse-up listener
+ * Tries to find the start- and target-field for the current editor action.
+ * Removes the piece reference from the start field (if available) and adds it
+ * to the target field.
+ * Triggers a redraw of the canvas.
+ * Updates editor controls with possible castling moves.
+ * Note: "this" has to be binded to the boardeditor objekt.
+ * @param evt   Mouse event that triggered the listener
+ * @return false
+ */
 function EditorTargetListener(evt) {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
@@ -133,7 +161,7 @@ function EditorTargetListener(evt) {
 
   board.dragging.draggedPiece = null;
   canvas.draw();
-  this.checkRochade();
+  this.checkCastling();
 
   return false;
-}
+};

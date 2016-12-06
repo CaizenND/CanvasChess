@@ -1,33 +1,47 @@
+
+/**
+ * Constructor
+ * Module design pattern
+ * Provides an interface for a specific chess engine to make it usable for the
+ * frontend.
+ * @param frontEnd 		The FrontEnd object, which should use the engine
+ */
 var EngineInterface = (function(frontEnd) {
 
-	// public Attribute
+	// public attributes
 	var publicInterface = {
 		MIN_COMPUTER_LEVEL : 0,
 		MAX_COMPUTER_LEVEL : 4,
 		PROMOTION_STRINGS : ["queen", "rook", "knight", "bishop"]
 	};
-	// var PROMOTION_INTS = [P4_QUEEN, P4_ROOK, P4_KNIGHT, P4_BISHOP];
 
-	// private Attribute
+	// private attributes
 	var DEFAULT_COMPUTER_LEVEL = 2; // 0 - 4
-
 
 	var engine = p4_new_game();
 	var computerLevel = DEFAULT_COMPUTER_LEVEL;
 	var mate = false;
 	var stale = false;
 	var pawnPromotion = "queen";
-
 	var frontEnd = frontEnd;
 
+	// public methods
 
-	// public Methoden
+	/**
+	 * Tries to load a custom board state into the engine.
+	 * @param customState		FEN-string defining the board state.
+	 */
 	publicInterface.init = function(customState) {
 		if (customState != undefined && customState != null && customState != "") {
 			p4_fen2state(customState, engine);
 		}
-	}
+	};
 
+	/**
+	 * Tries to perform a move in the engine.
+	 * @param move		{start-field, target-field, promotion	(normally not needed)}
+	 * @return true, if move was successfull / false, if move was not successfull
+	 */
 	publicInterface.move = function(move) {
 		if (move.promotion == null) {
 			move.promotion = pawnPromotion;
@@ -41,64 +55,45 @@ var EngineInterface = (function(frontEnd) {
 		}
 		if (moveResult.ok) {
 			frontEnd.logMove(moveResult.string, engine.moveno);
-			//this.display_move_text(engine.moveno, moveResult.string);
-			//this.refresh();
-			//if (! (moveResult.flags & P4_MOVE_FLAG_MATE)) {
-				//this.next_move_timeout = window.setTimeout(
-					//function(p4d) {
-						//return function() {
-							//p4d.next_move();
-						//};
-					//}(this), 1);
-			//}
 		} else {
 			p4_log("bad move!", move);
 		}
-		//for (var i = 0; i < this.move_listeners.length; i++) {
-		//		this.move_listeners[i](moveResult);
 		return moveResult.ok;
-	}
+	};
 
+	/**
+	 * Gets the the color, which is to move.
+ 	 * @return "black" or "white"
+	 */
 	publicInterface.whosTurn = function() {
 		return (engine.to_play == 1) ? "black" : "white";
-	}
+	};
 
-	// move wird nur berechnet, nicht durchgeführt
+	/**
+	 * Calculates the move, the computer / engine will do next.
+ 	 * @return move as {start-field, target-field, promotion}
+	 */
 	publicInterface.computerMove = function() {
-		// var autoPlayTimeout = undefined;
 		var mv;
 		var depth = computerLevel + 1;
 		var startTime = Date.now();
 		mv = engine.findmove(depth);
 		var endTime = Date.now();
 		p4_log("findmove took", endTime - startTime);
-
-		//p4wn kann anscheinend adaptive die Suchtiefe erhöhen, lass ich erstmal raus
-		//if (P4WN_ADAPTIVE_LEVELS && depth > 2) {
-		//		var min_time = 25 * depth;
-		//		while (delta < min_time) {
-		//				depth++;
-		//				mv = engine.findmove(depth);
-		//				delta = Date.now() - start_time;
-		//				p4_log("retry at depth", depth, " total time:", delta);
-		//		}
-		//}
 		var move = {
 			start: convertBoardNotation(mv[0]),
 			target: convertBoardNotation(mv[1]),
 			promotion: "queen"
 		};
-		//var start = this.convertBoardNotation(mv[0]);
-		//var target = this.convertBoardNotation(mv[1]);
-		//var timeout = this.animateMove(start, target,
-		//	function() {this.move(mv[0], mv[1]);}.bind(this));
 		return move;
-	}
+	};
 
-	/* Engine benutzt Werte, kleiner als der Wert eines Bauern,
-	um zwischen ansonsten gleichwertigen Zügen zu unterscheiden.
-	So können bestimmte Strategien verfolgt oder eine gewisse
-	"Unvorherseebarkeit" simuliert werden */
+	/**
+	 * Generates feedback for a given move.
+	 + If the engine does not support this, the method can be undefined.
+	 * @param move 	{start-field, target-field, promotion} that should be rated
+ 	 * @return String, containing the feedback
+	 */
 	publicInterface.getFeedback = function(move) {
 		var bestMoves;
 		var highscore = "";
@@ -119,7 +114,7 @@ var EngineInterface = (function(frontEnd) {
 					bestMoves[i].target + " (" + bestMoves[i].score + ")\n";
 			}
 		}
-		
+
 		if (playerPlace == -1) {
 			return "Illegal move.";
 		}
@@ -135,8 +130,12 @@ var EngineInterface = (function(frontEnd) {
 				" moves.\n";
 		}
 		return feedback + highscore;
-	}
+	};
 
+	/**
+	 * Generates a normalized version of the board.
+ 	 * @return 8x8 array, containing "color-type" for a piece or "" for an empty field
+	 */
 	publicInterface.getBoard = function() {
 		var p4wnBoard = engine.board;
 		var normalizedBoard = new Array(8);
@@ -144,20 +143,28 @@ var EngineInterface = (function(frontEnd) {
 			normalizedBoard[i] = new Array(8);
 	    for (var j = 0; j < 8; j++) {
 	      var index = 20 + (i*10) + (j+1);
-				normalizedBoard[i][j] = p4wnBoard[index]
+				normalizedBoard[i][j] = convertPieceBoardToString(p4wnBoard[index]);
 	    }
 	  }
 		return normalizedBoard;
-	}
+	};
 
+	/**
+	 * Checks whether the game is over due to checkmate or stalemate.
+ 	 * @return true, if game is over / false, if game is not over
+	 */
 	publicInterface.isGameOver = function() {
 		if (mate || stale) {
 			return true;
 		} else {
 			return false;
 		}
-	}
+	};
 
+	/**
+	 * Replays the first n halfmoves of the current game within the engine.
+	 * @param n		Total number of halfmoves that should be replayed
+	 */
 	publicInterface.goToMove = function(n) {
 		var delta;
 		if (n < 0) {
@@ -168,19 +175,32 @@ var EngineInterface = (function(frontEnd) {
 		if (delta > engine.moveno) {
 			delta = engine.moveno;
 		}
-		//var div = this.elements.log;
-		//for (var i = 0; i < delta; i++) {
-		//		div.removeChild(div.lastChild);
-		//}
 		engine.jump_to_moveno(n);
 		mate = false;
 		stale = false;
-	}
+	};
 
+	/**
+	 * Generates the FEN-string for the current state of the game.
+ 	 * @return String, containing FEN-notation of the current state
+	 */
 	publicInterface.getFEN = function() {
 		return p4_state2fen(engine, false);
-	}
+	};
 
+	/**
+	 * Generates the FEN-string for the starting state of the game.
+	 * @return String, containing FEN-notation of the starting state
+	 */
+	publicInterface.getStartFEN = function() {
+		return engine.beginning;
+	};
+
+	/**
+	 * Generates a
+ 	 * @return Array, containing all moves of the current game as
+	 * {start-field, target-field, promotion}
+	 */
 	publicInterface.getMoveHistory = function() {
 		var moves = [];
 		for (var i = 0; i < engine.history.length; i++) {
@@ -193,54 +213,45 @@ var EngineInterface = (function(frontEnd) {
 			moves[i] = move;
 		}
 		return moves;
-	}
+	};
 
+	/**
+	 * Sets the computer- /engine-difficulty to a given value
+	 * @param level		New difficulty for the computer / engine
+	 * @return Integer, containing the new computer- / engine-difficulty
+	 */
 	publicInterface.setComputerLevel = function(level) {
 		if (level >= this.MIN_COMPUTER_LEVEL && level <= this.MAX_COMPUTER_LEVEL) {
 			computerLevel = level;
 		}
-	}
+		return computerLevel;
+	};
 
+	/**
+	 * Gets the current computer- / engine-difficulty.
+ 	 * @return Current computer- / engine-difficulty
+	 */
 	publicInterface.getComputerLevel = function() {
 		return computerLevel;
-	}
+	};
 
-	publicInterface.increaseComputerLevel = function() {
-		if (computerLevel < this.MAX_COMPUTER_LEVEL) {
-			computerLevel++;
-		}
-		return computerLevel;
-	}
-
-	publicInterface.decreaseComputerLevel = function() {
-		if (computerLevel > this.MIN_COMPUTER_LEVEL) {
-			computerLevel--;
-		}
-		return computerLevel;
-	}
-
+	/**
+	 * Sets the pawn-promotion for player moves.
+	 * @param promotion		String, containing piece type of the new pawn-promotion
+	 */
 	publicInterface.setPawnPromotion = function(promotion) {
 		if (promotion != null && this.PROMOTION_STRINGS.indexOf(promotion) >= 0
 		&& this.PROMOTION_STRINGS.indexOf(promotion) <= 3) {
 			pawnPromotion = promotion;
 		}
-	}
+	};
 
-	// publicInterface.getPawnPromotion = function() {
-	// 	return pawnPromotion;
-	// }
-
-	publicInterface.getStartFEN = function() {
-		return engine.beginning;
-	}
-
-	// private Methoden
-	function setComputerLevel(level) {
-		if (level < 5 && level >= 0) {
-			computerLevel = level;
-		}
-	}
-
+	// private methods
+	/**
+	 * Converts the P4wn field-IDs to normalized IDs between "a1" and "h8".
+	 * @param p4wnFieldID		P4wn field-ID
+ 	 * @return String, containing the normalited ID
+	 */
 	function convertBoardNotation(p4wnFieldID) {
 		var id = p4wnFieldID - 10;
 	  var idY = Math.floor(id / 10);
@@ -258,8 +269,13 @@ var EngineInterface = (function(frontEnd) {
 	  }
 	  fieldID += idY;
 	  return fieldID;
-	}
+	};
 
+	/**
+	 * Converts the numbers that P4wn uses for pieces to normalized names.
+	 * @param pieceNumber		P4wn piece number
+ 	 * @return String, containing the piece name
+	 */
 	function convertPieceNumberToName(pieceNumber) {
 		var pieceName = "";
 		switch (pieceNumber) {
@@ -272,8 +288,13 @@ var EngineInterface = (function(frontEnd) {
 			default: pieceName = ""; break;
 		}
 		return pieceName;
-	}
+	};
 
+	/**
+	 * Converts normalized names to the numbers that P4wn uses for pieces.
+	 * @param pieceName		Normalized name of the piece
+ 	 * @return Integer, containing the P4wn piece number
+	 */
 	function convertPieceNameToNumber(pieceName) {
 		var pieceNumber = -1;
 		switch (pieceName) {
@@ -286,7 +307,32 @@ var EngineInterface = (function(frontEnd) {
 			default: pieceNumber = -1; break;
 		}
 		return pieceNumber;
-	}
+	};
+
+	/**
+	 * Converts the board notation that P4wn uses for the piece to normalized descriptions.
+	 * @param boardNumber		P4wn board number for a piece
+ 	 * @return String, containing the normalized piece description as "color-type"
+	 */
+	function convertPieceBoardToString(boardNumber) {
+		var pieceString = "";
+		switch (boardNumber) {
+			case 2: pieceString = "white-pawn"; break;
+			case 3: pieceString = "black-pawn"; break;
+			case 4: pieceString = "white-rook"; break;
+			case 5: pieceString = "black-rook"; break;
+			case 6: pieceString = "white-knight"; break;
+			case 7: pieceString = "black-knight"; break;
+			case 8: pieceString = "white-bishop"; break;
+			case 9: pieceString = "black-bishop"; break;
+			case 10: pieceString = "white-king"; break;
+			case 11: pieceString = "black-king"; break;
+			case 12: pieceString = "white-queen"; break;
+			case 13: pieceString = "black-queen"; break;
+			default: break;
+		}
+		return pieceString;
+	};
 
 	return publicInterface
 });

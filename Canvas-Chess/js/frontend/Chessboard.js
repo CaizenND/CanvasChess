@@ -1,9 +1,16 @@
+
+/**
+ * Constructor
+ * Creates the Chessboard by initializing the relevant attributes and
+ * registering itself at the canvas.
+ * @param canvas    The canvas, on which the Chessboard should be drawn
+ */
 function Chessboard(canvas) {
   this.canvas = canvas;
   this.fields = [];
   this.pieces = [];
   // Weiß oben oder unten?
-  this.orientation = 0;
+  this.orientation = 1; // 1, -1
   this.posX = 0;
   this.posY = 0;
   this.width = 0;
@@ -17,8 +24,13 @@ function Chessboard(canvas) {
   this.BOARD_OFFSET_LEFT = 44; // Beschriftung unten
   this.CANVAS_OFFSET_TOP = 0; // feier Raum oben
   this.CANVAS_OFFSET_LEFT = 0; // freier Raum unten
-}
+  this.canvas.addDrawableObject(this, false);
+};
 
+/**
+ * Sets up the Chessboard by resizing itself based on the currently defined
+ * values and creating fields based on the size.
+ */
 Chessboard.prototype.setup = function() {
   this.posX = this.CANVAS_OFFSET_LEFT;
   this.posY = this.CANVAS_OFFSET_TOP;
@@ -32,8 +44,8 @@ Chessboard.prototype.setup = function() {
     for (var j = 0; j < 8; j++) {
       var field = new Field(this);
       this.fields[i].push(field);
-      var algebraicID = this.getLetterOfID(j+1) + (8-i);
-      field.setAlgebraicID(algebraicID);
+      var textualID = this.getLetterOfID(j+1) + (8-i);
+      field.setTextualID(textualID);
       field.setID(j+1, 8-i);
       field.setPosition(this.posX + this.BOARD_OFFSET_LEFT+(j*this.SQUARE_SIZE),
         this.posY + this.BOARD_OFFSET_TOP+(i*this.SQUARE_SIZE));
@@ -47,6 +59,11 @@ Chessboard.prototype.setup = function() {
   }
 };
 
+/**
+ * Translates an integer index to the respective index letter.
+ * @param id    Integer index that should be translated
+ * @return String, containing the index letter ("a"-"h" or "")
+ */
 Chessboard.prototype.getLetterOfID = function(id) {
   var letter = "";
   switch (id) {
@@ -63,15 +80,18 @@ Chessboard.prototype.getLetterOfID = function(id) {
   return letter;
 };
 
-Chessboard.prototype.switchPositions = function(orientation) {
-  this.orientation = orientation;
+/**
+ * Switches the orientation of the board horizontally.
+ */
+Chessboard.prototype.switchPositions = function() {
+  this.orientation = -1 * this.orientation;
   for (var i = 0; i < 8; i++) {
     for (var j = 0; j < 8; j++) {
       var currentField = this.fields[i][j];
-      if (this.orientation == 0) {
+      if (this.orientation == 1) {
         currentField.setPosition(this.posX + this.BOARD_OFFSET_LEFT+(j*this.SQUARE_SIZE),
             this.posY + this.BOARD_OFFSET_TOP+(i*this.SQUARE_SIZE));
-      } else {
+      } else if (this.orientation == -1) {
         currentField.setPosition(this.posX + this.BOARD_OFFSET_LEFT+(j*this.SQUARE_SIZE),
             this.posY + this.BOARD_OFFSET_TOP+((7-i)*this.SQUARE_SIZE));
       }
@@ -79,6 +99,10 @@ Chessboard.prototype.switchPositions = function(orientation) {
   }
 };
 
+/**
+ * Draws itself to the canvas. Includes lettering, fields, pieces and currently
+ * moved piece.
+ */
 Chessboard.prototype.draw = function() {
   var ctx = this.canvas.getContext("2d");
   ctx.save();
@@ -100,9 +124,9 @@ Chessboard.prototype.draw = function() {
           textPaddingTop);
       }
       if (j == 0) {
-        if (this.orientation == 0) {
+        if (this.orientation == 1) {
           text = 8-i;
-        } else {
+        } else if (this.orientation == -1) {
           text = i+1;
         }
         textPaddingTop = this.posY+(this.SQUARE_SIZE-fontSize)*0.5;
@@ -127,6 +151,10 @@ Chessboard.prototype.draw = function() {
   }
 };
 
+/**
+ * Imports a normalized board state and sets creates pieces accordingly.
+ * @param boardState
+ */
 Chessboard.prototype.loadBoard = function(boardState) {
   // Prevent deleted pieces from loading their images and drawing to the canvas
   for (var i = 0; i < this.pieces.length; i++) {
@@ -143,27 +171,16 @@ Chessboard.prototype.loadBoard = function(boardState) {
   if (boardState != null) {
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
-        //var index = 20 + (i*10) + (j+1);
-        var currentPiece = null;
-        switch (boardState[7-i][j]) {
-          case 2: currentPiece = new Piece("white", "pawn", this); break;
-          case 3: currentPiece = new Piece("black", "pawn", this); break;
-          case 4: currentPiece = new Piece("white", "rook", this); break;
-          case 5: currentPiece = new Piece("black", "rook", this); break;
-          case 6: currentPiece = new Piece("white", "knight", this); break;
-          case 7: currentPiece = new Piece("black", "knight", this); break;
-          case 8: currentPiece = new Piece("white", "bishop", this); break;
-          case 9: currentPiece = new Piece("black", "bishop", this); break;
-          case 10: currentPiece = new Piece("white", "king", this); break;
-          case 11: currentPiece = new Piece("black", "king", this); break;
-          case 12: currentPiece = new Piece("white", "queen", this); break;
-          case 13: currentPiece = new Piece("black", "queen", this); break;
-          default: break;
-        }
-        if (currentPiece != null) {
+        var pieceInfo = boardState[7-i][j].split("-");
+        if (pieceInfo.length == 2) {
+          var currentPiece = new Piece(pieceInfo[0], pieceInfo[1], this);
           this.pieces.push(currentPiece);
           currentPiece.loadImage();
-          this.fields[i][j].setPiece(currentPiece);
+          if (this.orientation == 1) {
+            this.fields[i][j].setPiece(currentPiece);
+          } else if (this.orientation == -1) {
+            this.fields[7-i][j].setPiece(currentPiece);
+          }
         }
       }
     }

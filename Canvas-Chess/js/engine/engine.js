@@ -747,7 +747,14 @@ function p4_findmove(state, level, colour, ep){
     return [bs, be, alpha];
 }
 
-// TODO: nicht standardmäßig in Engine BEGIN
+/**
+ * Generates a list of all possible moves for a given game state and rates each move.
+ * @param state   Game state to run the function on
+ * @param level   Depth for the rating algorithm
+ * @param colour  Colour which is to move - optional
+ * @param ep      Currently valid en passant moves - optional
+ * @return Array, containing all possible moces as {start, target, score}
+ */
 var p4_getRatedPossibleMoves = function(state, level, colour, ep) {
   p4_prepare(state);
   p4_optimise_piece_list(state);
@@ -798,7 +805,6 @@ var p4_getRatedPossibleMoves = function(state, level, colour, ep) {
   bestMoves.sort(sortFunction);
   return bestMoves;
 }
-// TODO: nicht standardmäßig in Engine END
 
 /*p4_make_move changes the state and returns an object containing
  * everything necesary to undo the change.
@@ -1390,11 +1396,10 @@ function p4_fen2state(fen, state){
     state.findmove = function(level){
         return p4_findmove(this, level);
     };
-    // TODO: nicht standardmäßig in Engine BEGIN
+    // Not part of engine, added for feedback demonstration
     state.getRatedPossibleMoves = function(level) {
         return p4_getRatedPossibleMoves(this, level);
     };
-    // TODO: nicht standardmäßig in Engine END
     state.jump_to_moveno = function(moveno){
         return p4_jump_to_moveno(this, moveno);
     };

@@ -1,12 +1,21 @@
+
+/**
+ * Constructor
+ * Module design pattern
+ * Creates a frontend object, which is responsible for handling user interaction
+ * and calling the engine.
+ * @param	id								ID of the DIV node in which the frontend should be created
+ * @param argumentString		String containing configuration parameters for the frontend
+ */
 var FrontEnd = (function(id, argumentString) {
 
-	// public Attribute
+	// public attributes
 	var publicInterface = {
 		configuration: null,
 		chessboard : {}
 	}
 
-	// private Attribute
+	// private attributes
 	var interactionMode = 2;		// Drag & Drop (1), Select & Move (2)
 
 	var replay = null;
@@ -21,9 +30,18 @@ var FrontEnd = (function(id, argumentString) {
 
 	var	active = true;
 
+	// Delays computer moves to slow down computer vs. computer games
   var autoPlayTimeout = undefined;
 
-  // public Methoden
+
+  // public methods
+
+	/**
+	 * Tries to execute a move by calling the engine and displays feedback if the
+	 * engine support the generation of feedback.
+	 * @param move		{start-field, target-field, promotion}
+	 * @return true, if move was successfull / false, if move was not successfull
+	 */
 	publicInterface.move = function(move) {
 		// log feedback
 		if (engineInterface.getFeedback != undefined && publicInterface.configuration.showFeedback) {
@@ -48,12 +66,19 @@ var FrontEnd = (function(id, argumentString) {
     return moveResult;
   };
 
+	/**
+	 * Reloads the boardstate from the engine into the chessboard and triggers a
+	 * redraw of the canvas.
+	 */
   publicInterface.refresh = function() {
     this.chessboard.loadBoard(engineInterface.getBoard());
-		// TODO: Animationen mit requestanimationframe?
 		elements.boardCanvas.draw();
   };
 
+	/**
+	 * Opens a new tab in which the current game (starting position in FEN-notation
+	 * and each move) is displayed in an xml-format that can later be imported.
+	 */
 	publicInterface.exportGameToXML = function() {
 		var fen = engineInterface.getStartFEN();
 		if (fen != null) {
@@ -70,8 +95,12 @@ var FrontEnd = (function(id, argumentString) {
 		var a = document.getElementById("a");
   	var file = new Blob([xml], {type: "text/plain"});
   	window.open(URL.createObjectURL(file));
-	}
+	};
 
+	/**
+	 * Sets up the frontend for a game after the editor was used.
+	 * @param editorFEN		FEN-string that should be loaded as the starting board state
+	 */
 	publicInterface.editorCustomStart = function(editorFEN) {
 		disableEditor();
 		this.chessboard.setup();
@@ -79,8 +108,11 @@ var FrontEnd = (function(id, argumentString) {
 		initEngine(editorFEN);
 	  this.refresh();
 		this.activateBoard();
-	}
+	};
 
+	/**
+	 * Automatically replays a game, that was imported via an xml file.
+	 */
 	publicInterface.playReplay = function() {
 		if (replay != null) {
 			var div = elements.controls;
@@ -122,15 +154,24 @@ var FrontEnd = (function(id, argumentString) {
 			}
 			callback();
 		}
-	}
+	};
 
+	/**
+	 * Changes the interaction mode for the chessboad.
+	 * @param mode		Interaction mode that should be used (1 / 2)
+	 */
 	publicInterface.setInteractionMode = function(mode) {
 		if (mode >= 1 && mode <= 2) {
 			interactionMode = mode;
 			activateMoveListener();
 		}
-	}
+	};
 
+	/**
+	 * Changes the control for a given color between player and AI.
+	 * @param color			New controller for the color (human / computer)
+	 * @param control		Color for which the control should be changed
+	 */
 	publicInterface.setColorControl = function(color, control) {
 		if ((color == "white" || color == "black")
 		&& (control == "human" || control == "computer")) {
@@ -141,8 +182,13 @@ var FrontEnd = (function(id, argumentString) {
 			players[id] = control;
 			nextMove();
 		}
-	}
+	};
 
+	/**
+	 * Logs a move in the logging area.
+	 * @param moveString		String that should be displayed in the logging area
+ 	 * @param moveID				ID of the move (total number of halfmoves)
+	 */
 	publicInterface.logMove = function(moveString, moveID) {
 		if (this.configuration.showLogging) {
 			var logOut = elements.logging.output;
@@ -161,8 +207,12 @@ var FrontEnd = (function(id, argumentString) {
 			// always scroll to bottom to show newest move
 			logOut.scrollTop = logOut.scrollHeight;
 		}
-	}
+	};
 
+	/**
+	 * Returns to an earlier move in the game.
+	 * @param moveID		ID of the move to which the game should return
+	 */
 	publicInterface.goToMove = function(moveID) {
 		if (active == true) {
 			if (this.configuration.showLogging) {
@@ -177,21 +227,33 @@ var FrontEnd = (function(id, argumentString) {
 			this.refresh();
 			nextMove();
 		}
-	}
+	};
 
+	/**
+	 * Activates the board for user and engine interaction.
+	 * Activates the mouse listeners.
+	 */
 	publicInterface.activateBoard = function() {
 		active = true;
 		activateMoveListener();
-	}
+	};
 
+	/**
+	* Deactivates the board for user and engine interaction.
+	* Deactivates the mouse listeners.
+	 */
 	publicInterface.deactivateBoard = function() {
 		deactivateMoveListener();
 		active = false;
-	}
+	};
 
-  //private Methoden
 
-  // Baut div(s) zusammen
+  //private methods
+
+	/**
+	 * Builds the major DIV elements forming the frontend.
+	 * @param target		DIV element where the frontend should be build in
+	 */
   var initFrontend = function(target) {
     var container;
     if (typeof(target) == "string") {
@@ -207,11 +269,17 @@ var FrontEnd = (function(id, argumentString) {
 		elements.container.className = "chess";
     elements.boardCanvas = createNewChild(inner, "canvas", "boardCanvas");
 		prepareCanvas();
+		publicInterface.chessboard = new Chessboard(elements.boardCanvas);
 		elements.logging = createNewChild(container, "div", "logging");
 		elements.feedback = createNewChild(container, "div", "feedback");
     elements.controls = createNewChild(container, "div", "controls");
   };
 
+	/**
+	 * Sets up the canvas element by adding basic attributes and functions to
+	 * manage drawable objects itself as well as adding attributes to manage the
+	 * mouselisteners.
+	 */
 	var prepareCanvas = function() {
 		var canvas = elements.boardCanvas;
 	  canvas.drawableObjects = [];
@@ -247,12 +315,10 @@ var FrontEnd = (function(id, argumentString) {
 	  canvas.interactionListener.startEvent = null;
 	};
 
-	var initChessboard = function() {
-    var canvas = elements.boardCanvas;
-    publicInterface.chessboard = new Chessboard(canvas);
-		canvas.addDrawableObject(publicInterface.chessboard, false);
-  };
-
+	/**
+	 * Processes the String of arguments to import and configure the configuration
+	 * objects.
+	 */
 	var processArgumentString = function() {
 		var editor = false;
 		var difficulty = null;
@@ -329,28 +395,47 @@ var FrontEnd = (function(id, argumentString) {
 				nextMove();
 			}
 		}
-	}
+	};
 
+	/**
+	 * Processes the "config" argument.
+	 * @param value		Value of the "config" argument
+	 */
 	var argumentConfig = function(value) {
 		publicInterface.configuration = ConfigurationManager.getConfiguration(value);
-	}
+	};
 
+	/**
+	 * Processes the "difficulty" argument.
+	 * @param value		Value of the "difficulty" argument
+	 * @return Integer containing difficulty or null if difficulty not wthin boundaries
+	 */
 	var argumentDifficulty = function(value) {
 		var difficulty = parseInt(value);
 		if (difficulty >= engineInterface.MIN_COMPUTER_LEVEL && difficulty <= engineInterface.MAX_COMPUTER_LEVEL) {
 			return difficulty;
 		}
 		return null;
-	}
+	};
 
+	/**
+	 * Processes the "interaction" argument.
+	 * @param value		Value of the "interaction" argument
+	 * @return Integer containing interaction mode or null if interaction mode not wthin boundaries
+	 */
 	var argumentInteraction = function(value) {
 		var mode = parseInt(value);
 		if (mode >= 1 && mode <= 2) {
 			return mode;
 		}
 		return null;
-	}
+	};
 
+	/**
+	 * Processes the "players" argument.
+	 * @param value		Value of the "players" argument
+	 * @return String containing default players (human / computer) or null if wrong format
+	 */
 	var argumentsPlayers = function(value) {
 		var defaultAI = value.split(",");
 		if (defaultAI.length == 2 &&
@@ -359,30 +444,50 @@ var FrontEnd = (function(id, argumentString) {
 			return defaultAI;
 		}
 		return null;
-	}
+	};
 
+	/**
+	 * Processes the "promotion" argument.
+	 * @param value		Value of the "promotion" argument
+	 * @return String containing the pawn promotion or null if illegal piece
+	 */
 	var argumentPromotion = function(value) {
 		if (engineInterface.PROMOTION_STRINGS.indexOf(value) >= 0
 		&& engineInterface.PROMOTION_STRINGS.indexOf(value) <= engineInterface.PROMOTION_STRINGS.length) {
 			return value;
 		}
 		return null;
-	}
+	};
 
+	/**
+	 * Processes the "replay" argument by importing an xml file.
+	 * @param value		Value of the "replay" argument
+	 */
 	var argumentReplay = function(value) {
 		if (checkForXML(value)) {
 			// parse xml file
 			replay = parseXMLFile(value);
 		}
-	}
+	};
 
+	/**
+	 * Processes the "size" argument.
+	 * @param value		Value of the "size" argument
+	 * @return Integer containing size or null if size not wthin boundaries
+	 */
 	var argumemntSize = function(value) {
 		var size = parseInt(value);
 		if (size >= 55) {
 			return size;
 		}
-	}
+		return null;
+	};
 
+	/**
+	 * Checks whether a given String can be a path to an xml file.
+	 * @param customStart		String that should be checked
+	 * @return true if string can be path to xml file, false if not
+	 */
 	var checkForXML = function(customStart) {
 		if (customStart != undefined && customStart != null) {
 			var startSplit = customStart.split(".");
@@ -392,20 +497,30 @@ var FrontEnd = (function(id, argumentString) {
 			}
 		}
 		return false;
-	}
+	};
 
+	/**
+	 * Enables the board editor.
+	 * Deactivates the boatd interaction, creates the editor object, resizes the
+	 * frontend and redraws the canvas.
+	 */
 	var enableEditor = function() {
 		publicInterface.deactivateBoard();
 		boardEditor = new BoardEditor(publicInterface, elements.controls);
 		renderElements();
 		elements.boardCanvas.draw();
-	}
+	};
 
+	/**
+	 * Disables the board Editor.
+	 */
 	var disableEditor = function() {
 		boardEditor = null;
-	}
+	};
 
-  //Stellt Größe ein. Für das Canvas muss was davon rüber
+	/**
+	 * Resizes the major frontend elements based on the sizes defined in the chessboard
+	 */
   var renderElements = function() {
 		var board = publicInterface.chessboard;
     board.BOARD_OFFSET_TOP = board.SQUARE_SIZE*0.8;
@@ -431,34 +546,45 @@ var FrontEnd = (function(id, argumentString) {
 		}
   };
 
+	/**
+	 * Creates the game and logging controls for the frontend and resizes it.
+	 */
 	var writeControlsHtml = function() {
 		var e = elements;
 		var controlsDiv = e.controls;
 		var loggingDiv = e.logging;
 		createGameControls(controlsDiv, publicInterface, engineInterface);
-		loggingDiv.output =  createLoggingControls(loggingDiv, publicInterface);
+		loggingDiv.output = createLoggingControls(loggingDiv, publicInterface);
 		renderElements();
 	};
 
+	/**
+	 * Creates the replay controls and import the starting board state of the
+	 * replay into the engine.
+	 */
 	var startFromReplay = function() {
-		// create controls
 		var div = elements.controls;
 		var replayControls = createReplayControls(div, publicInterface);
 		initEngine(replay.startFEN);
 		publicInterface.playReplay();
-	}
+	};
 
+	/**
+	 * Imports a board state in FEN-notation into the engine.
+	 * @param customStartFEN		FEN-string that should be imported
+	 */
 	var initEngine = function(customStartFEN) {
 		// prevent empty boards from loading
 		var components = customStartFEN.split(" ");
 		if (components[0] != "8/8/8/8/8/8/8/8") {
 			engineInterface.init(customStartFEN);
 		}
-	}
+	};
 
-  /* Auto play timeout verzögert die Züge des Computers,
-	da sonst bei Comp vs. Comp Spielen die Spiele quasi direkt zuende wären,
-	weil es so schnell geht. */
+	/**
+	 * Checks which color is to move.
+	 * Triggers the computer to make a move if it is its turn.
+	 */
   var nextMove = function()  {
 		if (active == true) {
 			var nextColor = engineInterface.whosTurn();
@@ -477,24 +603,34 @@ var FrontEnd = (function(id, argumentString) {
 		}
   };
 
+	/**
+	 * Lets the engine calculate the best move and lets the engine perform it.
+	 * @param
+	 */
   var computerMove = function() {
     autoPlayTimeout = undefined;
-			var move = engineInterface.computerMove();
-			// maybe something happened during findmove
-			if (active == true) {
-				var timeout = animateMove(move,
-					function(engineInterface, frontEnd, next) {
-						return function() {
-							var moveResult = engineInterface.move(move);
-							frontEnd.refresh();
-							if (moveResult && !engineInterface.isGameOver()) {
-								next();
-							}
-						};
-					}(engineInterface, publicInterface, nextMove));
+		var move = engineInterface.computerMove();
+		// maybe something happened during findmove
+		if (active == true) {
+			animateMove(move,
+				function(engineInterface, frontEnd, next) {
+					return function() {
+						var moveResult = engineInterface.move(move);
+						frontEnd.refresh();
+						if (moveResult && !engineInterface.isGameOver()) {
+							next();
+						}
+					};
+				}(engineInterface, publicInterface, nextMove));
 		}
   };
 
+	/**
+	 * Animates a move on the canvas / chessboard.
+	 * @param move				{start-field, target-field, promotion (can be null)}
+	 * @param callback		function that should be called after the animation is complete
+	 * @return Integer containing the total time needed for the animation in milliseconds
+	 */
 	var animateMove = function(move, callback) {
 		var start = move.start;
 		var target = move.target;
@@ -507,10 +643,10 @@ var FrontEnd = (function(id, argumentString) {
 		var timePerStep = 10;
 		for (var i = 0; i < fields.length; i++) {
 			for (var j = 0; j < 8; j++) {
-				if (fields[i][j].algebraicID == start) {
+				if (fields[i][j].textualID == start) {
 					startField = fields[i][j];
 				}
-				if (fields[i][j].algebraicID == target) {
+				if (fields[i][j].textualID == target) {
 					targetField = fields[i][j];
 				}
 			}
@@ -561,6 +697,9 @@ var FrontEnd = (function(id, argumentString) {
 		}
 	};
 
+	/**
+	 * Activates the mouselisteners for the current interaction mode.
+	 */
 	var activateMoveListener = function() {
 		// Geht auf Nummer sicher, dass nicht auf einmal mehrere Listener gleichzeitig aktiv sind
 		deactivateMoveListener();
@@ -573,8 +712,11 @@ var FrontEnd = (function(id, argumentString) {
 			canvas.interactionListener.startListener = GameStartListenerUp.bind(publicInterface);
 			canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
 		}
-	}
+	};
 
+	/**
+	 * Deactivates the mouselisteners.
+	 */
 	var deactivateMoveListener = function() {
 		var canvas = publicInterface.chessboard.canvas;
 		var interactionListener = canvas.interactionListener;
@@ -588,22 +730,8 @@ var FrontEnd = (function(id, argumentString) {
 		interactionListener.startEvent = null;
 	};
 
-  //Nur fürs animieren mehrerer moves (auf einmal)
-  // var animateMoves = function(moves) {
-  //   if (moves != null && moves[0] != null && moves[0].length == 2) {
-  //     var callback = function(){this.refresh();}.bind(this);
-  //     for (var i = moves.length - 1; i >= 0; i--) {
-  //       var callback = (function (index, callback) {
-  //         return function() {this.animateMove(moves[index][0], moves[index][1], callback);}.bind(this);
-  //       }.bind(this))(i, callback);
-  //     }
-  //     callback();
-  //   }
-  // };
-
-	// Konstruktor
+	// Constructor
 	initFrontend(id);
-	initChessboard();
 	processArgumentString();
 
   return publicInterface

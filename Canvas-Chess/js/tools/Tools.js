@@ -1,3 +1,12 @@
+
+/**
+ * Creates a child element of a given type and with given classes for a given
+ * parent element:
+ * @param element     Parent element
+ * @param childtag    Type of the child element
+ * @param className   Class(es) of the child element
+ * @return Child element
+ */
 var createNewChild = function(element, childtag, className) {
   var child = document.createElement(childtag);
   element.appendChild(child);
@@ -32,8 +41,13 @@ function loadXMLDoc(filename) {
 	xhttp.open("GET",filename,false);
 	xhttp.send();
 	return xhttp.responseXML;
-}
+};
 
+/**
+ * Parses an xml file containing a chess game replay.
+ * @param filename    Path to the xml file that should be parsed
+ * @return replay object {startFEN, movelist}
+ */
 var parseXMLFile = function(filename) {
   var xmlDoc = loadXMLDoc(filename);
   var startFEN = null;
@@ -84,8 +98,15 @@ var parseXMLFile = function(filename) {
     movelist: movelist
   }
   return replay;
-}
+};
 
+/**
+ * Parses an xml node representing a single move.
+ * @param moveNode
+ * @param expectedID
+ * @param filename
+ * @return Move object {start-field, target-field, promotion}
+ */
 var parseMoveNode = function(moveNode, expectedID, filename) {
   var moveError = false;
   var startField = "";
@@ -168,4 +189,4 @@ var parseMoveNode = function(moveNode, expectedID, filename) {
     };
   }
   return move;
-}
+};

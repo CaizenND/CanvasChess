@@ -1,3 +1,10 @@
+
+/**
+ * Constructor
+ * Creates a default configuration object.
+ * Note: Configuration has to be given a name and be added to the
+ * "ConfigurationManager"
+ */
 var Configuration = function() {
   this.name = undefined;
   this.size = 55; // >55
@@ -15,12 +22,22 @@ var Configuration = function() {
   this.allowLoggingInteraction = true;
   this.showFeedback = true;
   this.showEditor = false;
-}
+};
 
+/**
+ * Default configuration
+ */
 var defaultConfiguration = new Configuration();
 defaultConfiguration.name = "default";
 ConfigurationManager.addConfiguration(defaultConfiguration);
 
+/**
+ * Minimal configuration
+ * No AI selection
+ * No difficulty selection
+ * No game export possible
+ * No logging of moves
+ */
 var minimalConfiguration = new Configuration();
 minimalConfiguration.name = "minimal";
 minimalConfiguration.showAISelect = false;
@@ -29,6 +46,10 @@ minimalConfiguration.showExport = false;
 minimalConfiguration.showLogging = false;
 ConfigurationManager.addConfiguration(minimalConfiguration);
 
+/**
+ * editor configuration
+ * Editor enabled
+ */
 var EditorConfiguration = new Configuration();
 EditorConfiguration.name = "editor";
 EditorConfiguration.showEditor = true;

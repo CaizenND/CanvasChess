@@ -1,29 +1,42 @@
+
+/**
+* Constructor
+* Creates a piece object and initializes attributes.
+ * @param pieceColor    Color of the piece (white / black)
+ * @param pieceType     Type of the piece (pawn, king, ...)
+ * @param chessboard    Chessboard object that should manage the piece
+ */
 function Piece(pieceColor, pieceType, chessboard) {
   this.color = pieceColor;
   this.type = pieceType;
   this.board = chessboard;
   this.image = new Image();
-  this.idX = 0;
-  this.idY = 0;
   this.posX = 0;
   this.posY = 0;
   this.size = 24;
-}
+};
 
+/**
+ * Sets the position of the piece on the canvas.
+ * @param x   X-coordinate on the canvas
+ * @param y   Y-coordinate on the canvas
+ */
 Piece.prototype.setPosition = function(x, y) {
   this.posX = x;
   this.posY = y;
-}
+};
 
+/**
+ * Sets the size of the piece (width and height) on the canvas.
+ * @param size    Size of the piece (width and height) on the canvas
+ */
 Piece.prototype.setSize = function(size) {
   this.size = size;
-}
+};
 
-Piece.prototype.setID = function(x, y) {
-  this.idX = x;
-  this.idY = y;
-}
-
+/**
+ * Draws the piece / image on the canvas.
+ */
 Piece.prototype.draw = function() {
   var ctx = this.board.canvas.getContext("2d");
   ctx.save();
@@ -37,6 +50,10 @@ Piece.prototype.draw = function() {
   ctx.restore();
 };
 
+/**
+ * Loads the correct image for the pieces color and type and draws it to the
+ * canvas.
+ */
 Piece.prototype.loadImage = function() {
   this.image.onload = (function(piece) {
     return function() {
@@ -45,4 +62,4 @@ Piece.prototype.loadImage = function() {
   })(this);
   var imgPath = "../img/" + this.color + "_" + this.type + ".gif";
   this.image.src = imgPath;
-}
+};

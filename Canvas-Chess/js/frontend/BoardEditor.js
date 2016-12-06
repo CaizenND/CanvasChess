@@ -1,24 +1,38 @@
+
+/**
+ * Constructor
+ * Sets up the editor by creating the controls, registering itself at the canvas
+ * and adding a mouselistener to the canvas.
+ * @param frontEnd            The FrontEnd object, which should use the editor
+ * @param frontEndControls    The div element, which should contain the controls
+ */
 function BoardEditor(frontEnd, frontEndControls) {
   this.frontEnd = frontEnd;
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
+
+  // controls
   this.frontEndControls = frontEndControls;
   this.controls = createEditorControls(frontEndControls, this);
 
+  // canvas
   board.CANVAS_OFFSET_LEFT = 2 * board.SQUARE_SIZE;
   board.setup();
   board.loadBoard(null);
   canvas.addDrawableObject(this, true);
 
   this.buildPieces();
-
-  this.checkRochade();
+  this.checkCastling();
 
   // mouse Listener
   canvas.interactionListener.startListener = EditorStartListener.bind(this);
   canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
 };
 
+/**
+ * Removes the editor controls from the surrounding div element und removes the
+ * moselisteners.
+ */
 BoardEditor.prototype.destroyControls = function() {
   var canvas = frontEnd.chessboard.canvas;
   this.frontEndControls.removeChild(this.controls.meta);
@@ -29,6 +43,9 @@ BoardEditor.prototype.destroyControls = function() {
   canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
 };
 
+/**
+ * Creates the Piece objects that are drawn in the editor area of the canvas.
+ */
 BoardEditor.prototype.buildPieces = function() {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
@@ -95,25 +112,29 @@ BoardEditor.prototype.buildPieces = function() {
 
   for (var i = 0; i < this.pieces.length; i++) {
     this.pieces[i].setSize(board.SQUARE_SIZE * 0.8);
-    this.pieces[i].setID(-1, -1);
     this.pieces[i].loadImage();
   }
 };
 
-BoardEditor.prototype.checkRochade = function() {
+/**
+ * Checks whether the current pieces on the board would allow castling moves and
+ * makes these available in the respective dropdown menu.
+ */
+BoardEditor.prototype.checkCastling = function() {
   var fields = this.frontEnd.chessboard.fields;
-  // white Rochade
-  if (this.controls.whiteRochade.kingQueen != null) {
-    this.controls.whiteRochade.removeChild(this.controls.whiteRochade.kingQueen);
-    this.controls.whiteRochade.kingQueen = null;
+
+  // white castling
+  if (this.controls.whiteCastling.kingQueen != null) {
+    this.controls.whiteCastling.removeChild(this.controls.whiteCastling.kingQueen);
+    this.controls.whiteCastling.kingQueen = null;
   }
-  if (this.controls.whiteRochade.king != null) {
-    this.controls.whiteRochade.removeChild(this.controls.whiteRochade.king);
-    this.controls.whiteRochade.king = null;
+  if (this.controls.whiteCastling.king != null) {
+    this.controls.whiteCastling.removeChild(this.controls.whiteCastling.king);
+    this.controls.whiteCastling.king = null;
   }
-  if (this.controls.whiteRochade.queen != null) {
-    this.controls.whiteRochade.removeChild(this.controls.whiteRochade.queen);
-    this.controls.whiteRochade.queen = null;
+  if (this.controls.whiteCastling.queen != null) {
+    this.controls.whiteCastling.removeChild(this.controls.whiteCastling.queen);
+    this.controls.whiteCastling.queen = null;
   }
   var wKingInPos = false;
   if (fields[7][4].piece != null) {
@@ -135,34 +156,34 @@ BoardEditor.prototype.checkRochade = function() {
   }
   if (wKingInPos) {
     if (wRookLInPos && wRookRInPos) {
-      this.controls.whiteRochade.kingQueen = createNewChild(this.controls.whiteRochade, "option");
-      this.controls.whiteRochade.kingQueen.appendChild(document.createTextNode("KQ"));
-      this.controls.whiteRochade.kingQueen.value = "KQ";
+      this.controls.whiteCastling.kingQueen = createNewChild(this.controls.whiteCastling, "option");
+      this.controls.whiteCastling.kingQueen.appendChild(document.createTextNode("KQ"));
+      this.controls.whiteCastling.kingQueen.value = "KQ";
     }
     if (wRookRInPos) {
-      this.controls.whiteRochade.king = createNewChild(this.controls.whiteRochade, "option");
-      this.controls.whiteRochade.king.appendChild(document.createTextNode("K"));
-      this.controls.whiteRochade.king.value = "K";
+      this.controls.whiteCastling.king = createNewChild(this.controls.whiteCastling, "option");
+      this.controls.whiteCastling.king.appendChild(document.createTextNode("K"));
+      this.controls.whiteCastling.king.value = "K";
     }
     if (wRookLInPos) {
-      this.controls.whiteRochade.queen = createNewChild(this.controls.whiteRochade, "option");
-      this.controls.whiteRochade.queen.appendChild(document.createTextNode("Q"));
-      this.controls.whiteRochade.queen.value = "Q";
+      this.controls.whiteCastling.queen = createNewChild(this.controls.whiteCastling, "option");
+      this.controls.whiteCastling.queen.appendChild(document.createTextNode("Q"));
+      this.controls.whiteCastling.queen.value = "Q";
     }
   }
 
-  // black Rochade
-  if (this.controls.blackRochade.kingQueen != null) {
-    this.controls.blackRochade.removeChild(this.controls.blackRochade.kingQueen);
-    this.controls.blackRochade.kingQueen = null;
+  // black castling
+  if (this.controls.blackCastling.kingQueen != null) {
+    this.controls.blackCastling.removeChild(this.controls.blackCastling.kingQueen);
+    this.controls.blackCastling.kingQueen = null;
   }
-  if (this.controls.blackRochade.king != null) {
-    this.controls.blackRochade.removeChild(this.controls.blackRochade.king);
-    this.controls.blackRochade.king = null;
+  if (this.controls.blackCastling.king != null) {
+    this.controls.blackCastling.removeChild(this.controls.blackCastling.king);
+    this.controls.blackCastling.king = null;
   }
-  if (this.controls.blackRochade.queen != null) {
-    this.controls.blackRochade.removeChild(this.controls.blackRochade.queen);
-    this.controls.blackRochade.queen = null;
+  if (this.controls.blackCastling.queen != null) {
+    this.controls.blackCastling.removeChild(this.controls.blackCastling.queen);
+    this.controls.blackCastling.queen = null;
   }
   var bKingInPos = false;
   if (fields[0][4].piece != null) {
@@ -184,29 +205,37 @@ BoardEditor.prototype.checkRochade = function() {
   }
   if (bKingInPos) {
     if (bRookLInPos && bRookRInPos) {
-      this.controls.blackRochade.kingQueen = createNewChild(this.controls.blackRochade, "option");
-      this.controls.blackRochade.kingQueen.appendChild(document.createTextNode("kq"));
-      this.controls.blackRochade.kingQueen.value = "kq";
+      this.controls.blackCastling.kingQueen = createNewChild(this.controls.blackCastling, "option");
+      this.controls.blackCastling.kingQueen.appendChild(document.createTextNode("kq"));
+      this.controls.blackCastling.kingQueen.value = "kq";
     }
     if (bRookRInPos) {
-      this.controls.blackRochade.king = createNewChild(this.controls.blackRochade, "option");
-      this.controls.blackRochade.king.appendChild(document.createTextNode("k"));
-      this.controls.blackRochade.king.value = "k";
+      this.controls.blackCastling.king = createNewChild(this.controls.blackCastling, "option");
+      this.controls.blackCastling.king.appendChild(document.createTextNode("k"));
+      this.controls.blackCastling.king.value = "k";
     }
     if (bRookLInPos) {
-      this.controls.blackRochade.queen = createNewChild(this.controls.blackRochade, "option");
-      this.controls.blackRochade.queen.appendChild(document.createTextNode("q"));
-      this.controls.blackRochade.queen.value = "q";
+      this.controls.blackCastling.queen = createNewChild(this.controls.blackCastling, "option");
+      this.controls.blackCastling.queen.appendChild(document.createTextNode("q"));
+      this.controls.blackCastling.queen.value = "q";
     }
   }
 };
 
+/**
+ * Draws itself, respectively the editor pieces to the canvas.
+ */
 BoardEditor.prototype.draw = function() {
   for (var i = 0; i < this.pieces.length; i++) {
     this.pieces[i].draw();
   }
 };
 
+/**
+ * Generates a FEN-string from the current pieces on the board and the selected
+ * options in the controls area. Removes itself from the frontend and the canvas
+ * and updates the frontend with the FEN-string.
+ */
 BoardEditor.prototype.exportFEN = function() {
   var board = this.frontEnd.chessboard;
   var canvas = board.canvas;
@@ -214,10 +243,10 @@ BoardEditor.prototype.exportFEN = function() {
   var pieceFEN = this.getPiecePlacementFEN();
   // Active player
   var activeFEN = " " + this.controls.activePlayer.value;
-  // Rochade
-  var rochadeFEN = " " + this.controls.whiteRochade.value + this.controls.blackRochade.value;
-  if (rochadeFEN == " ") {
-    rochadeFEN += "-";
+  // Castling
+  var castlingFEN = " " + this.controls.whiteCastling.value + this.controls.blackCastling.value;
+  if (castlingFEN == " ") {
+    castlingFEN += "-";
   }
   // En passant
   var enPassantFEN = " -";
@@ -225,13 +254,17 @@ BoardEditor.prototype.exportFEN = function() {
   var halfmoveFEN = " 0";
   // Fullmove number
   var fullmoveFEN = " 1";
-  var fen = pieceFEN + activeFEN + rochadeFEN + enPassantFEN + halfmoveFEN + fullmoveFEN;
+  var fen = pieceFEN + activeFEN + castlingFEN + enPassantFEN + halfmoveFEN + fullmoveFEN;
   this.destroyControls();
   canvas.removeDrawableObject(this);
   board.CANVAS_OFFSET_LEFT = 0;
   this.frontEnd.editorCustomStart(fen);
 };
 
+/**
+ * Generates the board placement part of a FEN-string the current pieces on the board.
+ * @return String, containing the board placement in FEN-notation
+ */
 BoardEditor.prototype.getPiecePlacementFEN = function() {
   var fields = this.frontEnd.chessboard.fields;
   var placementFEN = "";
@@ -264,6 +297,11 @@ BoardEditor.prototype.getPiecePlacementFEN = function() {
   return placementFEN;
 };
 
+/**
+ * Converts a piece object to the respective letter that is used in FEN-notation.
+ * @param piece   Piece object, that should be converted to a FEN-letter
+ * @return String, containing the FEN-letter for the piece
+ */
 BoardEditor.prototype.getFENLetter = function(piece) {
   var letter = "";
   if (piece.color == "black") {

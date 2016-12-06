@@ -1,4 +1,12 @@
 
+/**
+ * Creates a container for a control area and a meta erea for that container.
+ * The meta area contains a given title and allows to toggle the visibility of
+ * the container.
+ * @param parentElement   HTML node element that should contain the new nodes
+ * @param title           Title that should be display in the meta area
+ * @return DIV element of the container
+ */
 var createMetaAndContainer = function(parentElement, title) {
   var categoryMeta = createNewChild(parentElement, "div", "category-meta");
 
@@ -28,8 +36,16 @@ var createMetaAndContainer = function(parentElement, title) {
   metaDescription.appendChild(document.createTextNode(title));
 
   return container;
-}
+};
 
+/**
+ * Creates the game controls for the frontend.
+ * Uses the defined configurations.
+ * @param parentElement     HTML node element that should contain the new nodes
+ * @param frontEnd          Frontend object that should accessed by the controls
+ * @param engineInterface   Engine interface object that should accessed by the controls
+ * @return DIV element containing the controls
+ */
 var createGameControls = function(parentElement, frontEnd, engineInterface) {
   var config = frontEnd.configuration;
 
@@ -102,7 +118,7 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
     }
   }
 
-  // AI Select
+  // AI select
   if (config.showAISelect) {
     // Control white
     container = createNewChild(gameControls, "div", "control-container");
@@ -129,7 +145,6 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
         input.checked = true;
       }
 
-      // fügt man Text per innerHTML in das parent label ein lädt das Bild nicht korrekt!!!!
       var label = createNewChild(whiteSelect, "label", "radio-option option-control");
       label.htmlFor = input.id;
 
@@ -194,7 +209,8 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
 
     buttonDecrease.onclick = (function(engine, label) {
       return function() {
-        var computerLevel = engine.decreaseComputerLevel();
+        var computerLevel = engine.getComputerLevel();
+        computerLevel = engine.setComputerLevel(computerLevel-1);
         while (difficultyLabel.firstChild) {
           difficultyLabel.removeChild(difficultyLabel.firstChild);
         }
@@ -204,7 +220,8 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
 
     buttonIncrease.onclick = (function(engine, label) {
       return function() {
-        var computerLevel = engine.increaseComputerLevel();
+        var computerLevel = engine.getComputerLevel();
+        computerLevel = engine.setComputerLevel(computerLevel+1);
         while (difficultyLabel.firstChild) {
           difficultyLabel.removeChild(difficultyLabel.firstChild);
         }
@@ -239,6 +256,13 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
   return gameControls;
 };
 
+ /**
+  * Creates the logging controls for the frontend.
+  * Uses the defined configurations.
+  * @param parentElement     HTML node element that should contain the new nodes
+  * @param frontEnd          Frontend object that should accessed by the controls
+  * @return DIV element containing the controls
+  */
 var createLoggingControls = function(parentElement, frontEnd) {
   var config = frontEnd.configuration;
 
@@ -252,7 +276,13 @@ var createLoggingControls = function(parentElement, frontEnd) {
   return null;
 };
 
-
+ /**
+  * Creates the replay controls for the frontend.
+  * Uses the defined configurations.
+  * @param parentElement     HTML node element that should contain the new nodes
+  * @param frontEnd          Frontend object that should accessed by the controls
+  * @return DIV element containing the controls
+  */
 var createReplayControls = function(parentElement, frontEnd) {
 
   // Container & meta-container (collapse)
@@ -277,17 +307,13 @@ var createReplayControls = function(parentElement, frontEnd) {
   return replayControls;
 };
 
-//
-// var createReplayControlsManual = function(parentElement, frontEnd) {
-//   var previousButton = createNewChild(parentElement, "button", "replay-button");
-//   previousButton.innerHTML = "Previous Move";
-//   previousButton.onclick = previousMoveReplay;
-//   var nextButton = createNewChild(parentElement, "button", "replay-button");
-//   nextButton.innerHTML = "Next Move";
-//   nextButton.onclick = nextMoveReplay;
-// };
-
-
+ /**
+  * Creates the editor controls for the frontend.
+  * Uses the defined configurations.
+  * @param parentElement    HTML node element that should contain the new nodes
+  * @param boardEditor      Board editor object that should accessed by the controls
+  * @return DIV element containing the controls
+  */
 function createEditorControls(parentElement, boardEditor) {
 
   // Container & meta-container (collapse)
@@ -309,38 +335,38 @@ function createEditorControls(parentElement, boardEditor) {
   playerBlack.value = "b";
   playerBlack.appendChild(document.createTextNode("black"));
 
-  // white Rochade
+  // white castling
   container = createNewChild(editorControls, "div", "control-container");
 
-  var whiteRochadeDescription = createNewChild(container, "div", "control-description");
-  whiteRochadeDescription.appendChild(document.createTextNode("White Rochades"));
+  var whiteCastlingDescription = createNewChild(container, "div", "control-description");
+  whiteCastlingDescription.appendChild(document.createTextNode("White Castling"));
 
-  editorControls.whiteRochade = createNewChild(container, "select", "selection");
+  editorControls.whiteCastling = createNewChild(container, "select", "selection");
 
-  editorControls.whiteRochade.none = createNewChild(editorControls.whiteRochade, "option");
-  editorControls.whiteRochade.none.value = "";
-  editorControls.whiteRochade.none.appendChild(document.createTextNode(""));
+  editorControls.whiteCastling.none = createNewChild(editorControls.whiteCastling, "option");
+  editorControls.whiteCastling.none.value = "";
+  editorControls.whiteCastling.none.appendChild(document.createTextNode(""));
 
-  editorControls.whiteRochade.kingQueen = null;
-  editorControls.whiteRochade.king = null;
-  editorControls.whiteRochade.queen = null;
+  editorControls.whiteCastling.kingQueen = null;
+  editorControls.whiteCastling.king = null;
+  editorControls.whiteCastling.queen = null;
 
-  // black Rochade
+  // black castling
   container = createNewChild(editorControls, "div", "control-container");
 
-  var blackRochadeDescription = createNewChild(container, "div", "control-description");
-  blackRochadeDescription.appendChild(document.createTextNode("Black Rochades"));
+  var blackCastlingDescription = createNewChild(container, "div", "control-description");
+  blackCastlingDescription.appendChild(document.createTextNode("Black Castling"));
 
 
-  editorControls.blackRochade = createNewChild(container, "select", "selection");
+  editorControls.blackCastling = createNewChild(container, "select", "selection");
 
-  editorControls.blackRochade.none = createNewChild(editorControls.blackRochade, "option");
-  editorControls.blackRochade.none.value = "";
-  editorControls.blackRochade.none.appendChild(document.createTextNode(""));
+  editorControls.blackCastling.none = createNewChild(editorControls.blackCastling, "option");
+  editorControls.blackCastling.none.value = "";
+  editorControls.blackCastling.none.appendChild(document.createTextNode(""));
 
-  editorControls.blackRochade.kingQueen = null;
-  editorControls.blackRochade.king = null;
-  editorControls.blackRochade.queen = null;
+  editorControls.blackCastling.kingQueen = null;
+  editorControls.blackCastling.king = null;
+  editorControls.blackCastling.queen = null;
 
   // continue button
   container = createNewChild(editorControls, "div", "control-container container-center");
