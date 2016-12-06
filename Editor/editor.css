@@ -1,0 +1,121 @@
+#rounded-corner
+{
+	font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+	font-size: 12px;
+	margin: 45px;
+	width: 800px;
+	text-align: left;
+	border-collapse: collapse;
+}
+#rounded-corner thead th.rounded-company
+{
+	background: #b9c9fe url('table-images/left.png') left -1px no-repeat;
+}
+#rounded-corner thead th.rounded-q4
+{
+	background: #b9c9fe url('table-images/right.png') right -1px no-repeat;
+}
+#rounded-corner th
+{
+	padding: 8px;
+	font-weight: normal;
+	font-size: 13px;
+	color: #039;
+	background: #b9c9fe;
+}
+#rounded-corner td
+{
+	padding: 8px;
+	background: #e8edff;
+	border-top: 1px solid #fff;
+	color: #669;
+}
+#rounded-corner tfoot td.rounded-foot-left
+{
+	background: #e8edff url('table-images/botleft.png') left bottom no-repeat;
+}
+#rounded-corner tfoot td.rounded-foot-right
+{
+	background: #e8edff url('table-images/botright.png') right bottom no-repeat;
+}
+#rounded-corner tbody tr:hover td
+{
+	background: #d0dafd;
+}
+
+.editor {
+	clear: both;
+}
+
+.singleLineInput{
+    margin: 8px 0;
+	float:left;
+	clear:both;
+}
+
+.singleLineInput:focus{
+	background-color: lightblue;
+}
+
+input.singleLineInput {
+	width: 70%;
+	height: 40px;
+}
+
+div.singleLineInput {
+	width: 100%;
+}
+
+div.table { 
+      display: table; 
+	  margin: 0 auto;
+}
+
+div.tr { 
+      display:table-row; 
+}
+
+div.td { 
+	  padding: 12px 15px;
+      display:table-cell;
+	  border-bottom: 1px solid gray;
+}
+
+div.th {
+	  font-weight:bold;
+	  padding: 12px 15px;
+      display:table-cell;
+	  border-bottom: 1px solid gray;
+}
+
+.centeredDiv {
+	width:51%;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.innerCenteredDiv {
+	width: 80%;
+	margin-left:auto;
+	margin-right:auto;
+}
+
+.taskText {
+	width: 100%;
+	max-width:100%;
+	height: 250px;
+}
+
+.taskDiv {
+	width: 95%;
+	margin: 20px auto;
+}
+
+.button-feedback {
+	width: 23px;
+	padding: 1px 6px;
+	border-width: 2px;
+    border-style: outset;
+	margin: 0;
+	font: 13.3333px Arial;	
+}

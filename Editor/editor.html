@@ -1,0 +1,156 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<script type='text/javascript' src='knockout-3.4.1.js'></script>
+<link rel="stylesheet" type="text/css" href="editor.css" />
+<link rel="stylesheet" href="../css/chess/chess.css"/>
+
+<script src="../js/engine/engine.js"></script>
+<script src="../js/engine/engine_interface.js"></script>
+
+<script src="../js/frontend/ChessGameListener.js"></script>
+<script src="../js/frontend/FrontEnd.js"></script>
+<script src="../js/frontend/Chessboard.js"></script>
+<script src="../js/frontend/Field.js"></script>
+<script src="../js/frontend/Piece.js"></script>
+<script src="../js/frontend/BoardEditor.js"></script>
+<script src="../js/frontend/ChessEditorListener.js"></script>
+<script src="../js/frontend/controls.js"></script>
+<script src="../js/frontend/configurationManager.js"></script>
+<script src="../js/frontend/configuration.js"></script>
+
+
+<script src="../js/tools/Tools.js"></script>
+</head>
+<body>
+<div id="board-goes-here"></div>
+<div class="editor">
+	<div class="centeredDiv">
+		<div class="category-meta">
+			<button class="button-chess button-float button-sign" data-bind="click: toggleTaskCollapse" id="collapseTask">+</button>
+			<div class="control-text">Aufgabenstellung</div>
+		</div>
+	
+		<div class="category-container" id="answerContainer" data-bind="visible: !collapseTaskContainer()">
+			<div class="taskDiv">
+				<textarea id="task" data-bind="value: task" class="taskText"> </textarea>
+			</div>
+		</div>
+	</div>
+
+	<div class="centeredDiv">
+		<div class="category-meta">
+			<button class="button-chess button-float button-sign" data-bind="click: toggleAnswerCollapse" id="collapseAnswer">+</button>
+			<div class="control-text">Antworten</div>
+		</div>
+	
+		<div class="category-container" id="answerContainer" data-bind="visible: !collapseAnswerContainer()">
+			<form data-bind="submit:addAnswer">
+				<input type="text" data-bind='value:answerToAdd, valueUpdate: "afterkeydown"' class="singleLineInput" placeholder="Neue Antwort"/>
+				<button type="submit" data-bind="enable: answerToAdd().length > 0" class="button-chess singleLineInput">Hinzuf&uuml;gen</button>
+			</form>
+
+			<div class="singleLineInput">
+				<div class="innerCenteredDiv" id="answers" data-bind="visible: answers().length > 0">
+					<div class="table">
+						<div class="tr">
+						  <div class="th">Antwort</div>
+						  <div class="th">Korrekt?</div>
+						  <div class="th"></div>
+						</div>
+						<!-- ko foreach: answers -->
+							<div class="tr">
+							  <div class="td"><input data-bind="value: answer" /></div>
+							  <div class="td"><input type="checkbox" data-bind="checked: correct"/></div>
+							  <div class="td"><a href="#" data-bind="click: $root.removeAnswer">Entfernen</a></div>
+							</div>
+						 <!-- /ko -->
+					</div>
+				</div>
+			</div>
+			<div>
+				<input type="text" id="correctAnswerMsg" name="correctAnswerMsg" data-bind="value: correctAnswerMsg"  class="singleLineInput" placeholder="Nachricht bei korrekter Antwort">			
+			</div>
+			<div class="singleLineInput">
+				<label>Antworten zuf&auml;llig anordnen</label> 
+				<input type="checkbox" id="randomize" name="randomize" value="">
+			</div>
+		</div>
+	</div>
+	<div class="centeredDiv">
+		<div class="category-meta">
+			<button class="button-chess button-float button-sign" data-bind="click: toggleFeedbackCollapse" id="collapseFeedback">+</button>
+			<div class="control-text">Feedback</div>
+		</div>
+		<div class="category-container" id="feedbackContainer" data-bind="visible: !collapseFeedbackContainer()">
+			<form data-bind="submit:addFeedback">
+				<input type="text" data-bind='value:feedbackToAdd, valueUpdate: "afterkeydown"' class="singleLineInput" placeholder="Neues Feedback"/>
+				<button type="submit" data-bind="enable: feedbackToAdd().length > 0" class="button-chess singleLineInput">Hinzuf&uuml;gen</button>
+			</form>
+
+			<div class="singleLineInput">
+				<div class="innerCenteredDiv" id="feedbacks" data-bind="visible: feedbacks().length > 0">
+					<div class="table">
+						<div class="tr">
+						  <div class="th">Feedback</div>
+						  <div class="th">Wann anzuwenden?</div>
+						  <div class="th"></div>
+						</div>
+						<!-- ko foreach: feedbacks -->
+							<div class="tr">
+							  <div class="td"><input data-bind="value: feedback"/></div>
+							  <div class="td">
+								<!-- ko foreach: $root.answers -->
+								<button data-bind="click: $root.toggleButton, attr: {id: 'answer-option' + answerId() + $parent.feedbackId()}" value="0" class="button-feedback">0</button>
+								<!-- /ko -->								
+							  </div>
+							  <div class="td"><a href="#" data-bind="click: $root.removeAnswer">Entfernen</a></div>
+							</div>							
+						 <!-- /ko -->
+					</div>
+				</div>
+			</div>
+			
+			
+		</div>
+	</div>
+	<div class="centeredDiv">
+		<div class="category-meta">
+			<button class="button-chess button-float button-sign" data-bind="click: toggleAdviceCollapse" id="collapseAdvice">+</button>
+			<div class="control-text">Hinweise</div>
+		</div>			
+				
+		<div class="category-container" id="adviceContainer" data-bind="visible: !collapseAdviceContainer()">
+			<form data-bind="submit:addAdvice">
+				<input type="text" data-bind='value:adviceToAdd, valueUpdate: "afterkeydown"' class="singleLineInput" placeholder="Neuer Hinweis"/>
+				<button type="submit" data-bind="enable: adviceToAdd().length > 0" class="button-chess singleLineInput">Hinzuf&uuml;gen</button>
+			</form>
+
+			<div id="advices" data-bind="visible: advices().length > 0">
+				<div class="table">
+					<div class="tr">
+					  <div class="th">Hinweise</div>
+					  <div class="th"></div>
+					</div>
+					<!-- ko foreach: advices -->
+						<div class="tr">
+						  <div class="td"><input data-bind="value: advice" /></div>
+						  <div class="td"><a href="#" data-bind="click: $root.removeAdvice">Entfernen</a></div>
+						</div>
+					 <!-- /ko -->
+				</div>
+			</div>
+			
+			<input type="text" id="skipMsg" name="skipMsg" data-bind="value: skipMsg" class="singleLineInput" placeholder="Skipmessage"/>
+		</div>
+	</div>
+
+	<div class="centeredDiv">
+		<input type = "button" value="xml Speichern" data-bind="click: createXml" class="button-chess item-center"/>
+	</div>
+</div>
+<script>var frontEnd = new FrontEnd("board-goes-here", "config:minimal;");</script>
+<script type='text/javascript' src='EditorXmlCreator.js'></script>
+<script type='text/javascript' src='ViewModel.js'></script>
+</body>
+</html>
