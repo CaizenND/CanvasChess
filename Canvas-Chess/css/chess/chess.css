@@ -71,7 +71,7 @@
   border-bottom-right-radius: 5px;
 }
 
-.control-container, .category-meta {
+.control-container, .category-meta, .control-container-padded {
   float: left;
   clear: both;
   display: flex;
@@ -79,15 +79,25 @@
   align-items: center;
 }
 
+.control-container-padded {
+	padding-bottom: 5px;
+	padding-top: 5px;
+}
+
 .container-center {
   width: 100%;
 }
 
-.control-description, .control-text {
+.control-description, .control-text, .control-description-large {
   float: left;
   font-size: 20px;
   margin: 0 auto;
   text-align: center;
+}
+
+.control-description-large {
+	width: 300px;
+	text-align: left;
 }
 
 .control-description {
@@ -257,6 +267,10 @@ input[type="radio"]:checked + label.radio-option:hover {
 
 .selection {
   width: 60px;
+}
+
+.selection-large {
+	width: 100px;
 }
 
 progress[value] {

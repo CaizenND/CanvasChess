@@ -1,8 +1,8 @@
 <html>
 <head>
 <meta charset="utf-8" />
-<script type='text/javascript' src='../js/editor/knockout-3.4.1.js'></script>
-<link rel="stylesheet" type="text/css" href="../css/editor/editor.css" />
+<script type='text/javascript' src='knockout-3.4.1.js'></script>
+<link rel="stylesheet" type="text/css" href="editor.css" />
 <link rel="stylesheet" href="../css/chess/chess.css"/>
 
 <script src="../js/engine/engine.js"></script>
@@ -19,19 +19,113 @@
 <script src="../js/frontend/configurationManager.js"></script>
 <script src="../js/frontend/configuration.js"></script>
 
-<script src="../js/tools/Tools.js"></script>
 
+<script src="../js/tools/Tools.js"></script>
 </head>
 <body>
 <div id="board-goes-here"></div>
 <div class="editor">
 	<div class="centeredDiv">
 		<div class="category-meta">
+			<button class="button-chess button-float button-sign" data-bind="click: toggleConfigCollapse" id="collapseConfig">+</button>
+			<div class="control-text">Schachbrett Konfiguration (optional)</div>
+		</div>
+	
+		<div class="category-container" id="configContainer" data-bind="visible: !collapseConfigContainer()">
+			<div class="configDiv">
+				<input type="text" data-bind='value:startFEN, valueUpdate: "afterkeydown"' class="singleLineInput" placeholder="Startzustand in Fen Notation"/>
+				<input type="text" data-bind='value:replay, valueUpdate: "afterkeydown"' class="singleLineInput" placeholder="Name der Replay-Datei"/>
+				<input type="text" data-bind='value:size, valueUpdate: "afterkeydown"' class="singleLineInput" placeholder="Gr&ouml;ße eines Feldes"/>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Spieler eins</div>				
+					<div class="radio-group">
+						<input class="group-input" type="radio" value="human" id="playerOneHuman" data-bind="checked: playerOne">
+						<label class="radio-option option-control" for="playerOneHuman">
+							<img class="option-image" src="../img/human.png">
+							<div class="option-text">Human</div>
+						</label>
+						<input class="group-input" type="radio" value="computer" id="playerOneComputer" data-bind="checked: playerOne">
+						<label class="radio-option option-control" for="playerOneComputer">
+							<img class="option-image" src="../img/computer.png">
+							<div class="option-text">Computer</div>
+						</label>
+					</div>
+				</div>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Spieler zwei</div>				
+					<div class="radio-group">
+						<input class="group-input" type="radio" value="human" id="playerTwoHuman" data-bind="checked: playerTwo">
+						<label class="radio-option option-control" for="playerTwoHuman">
+							<img class="option-image" src="../img/human.png">
+							<div class="option-text">Human</div>
+						</label>
+						<input class="group-input" type="radio" value="computer" id="playerTwoComputer" data-bind="checked: playerTwo">
+						<label class="radio-option option-control" for="playerTwoComputer">
+							<img class="option-image" src="../img/computer.png">
+							<div class="option-text">Computer</div>
+						</label>
+					</div>
+				</div>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Konfiguration der Steuerelemente</div>
+					<select class="selection-large" id="selectConfig" data-bind="value: selectedConfig">
+						<option value="" disabled selected style="display:none"> --- </option>
+						<!-- ko foreach: configs -->
+							<option data-bind="text: name"></option>		
+						<!-- /ko -->
+					</select>
+				</div>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Schwierigkeitsstufe</div>
+					<select class="selection" id="selectDifficulty" data-bind="value: selectedDifficulty">
+						<option value="" disabled selected style="display:none"> --- </option>
+						<option value="0">0</option>
+						<option value="1">1</option>
+						<option value="2">2</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+					</select>
+				</div>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Bauernumwandlung</div>
+					<select class="selection-large" id="selectPromotion" data-bind="value: selectedPromotion">
+						<option value="" disabled selected style="display:none"> --- </option>
+						<option value="queen">Queen</option>
+						<option value="rook">Rook</option>
+						<option value="knight">Knight</option>
+						<option value="bishop">Bishop</option>
+					</select>
+				</div>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Art der Interaktion</div>
+					<select class="selection-large" id="selectInteraction" data-bind="value: selectedInteraction">
+						<option value="" disabled selected style="display:none"> --- </option>
+						<option value="1">Drag &amp; Drop</option>
+						<option value="2">Select &amp; Move</option>
+					</select>
+				</div>
+				
+				<div class="control-container-padded">
+					<div class="control-description-large">Editor anzeigen</div>
+					<input type="checkbox" data-bind='checked: editor'/> 
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div class="centeredDiv">
+		<div class="category-meta">
 			<button class="button-chess button-float button-sign" data-bind="click: toggleTaskCollapse" id="collapseTask">+</button>
 			<div class="control-text">Aufgabenstellung</div>
 		</div>
 	
-		<div class="category-container" id="answerContainer" data-bind="visible: !collapseTaskContainer()">
+		<div class="category-container" id="taskContainer" data-bind="visible: !collapseTaskContainer()">
 			<div class="taskDiv">
 				<textarea id="task" data-bind="value: task" class="taskText"> </textarea>
 			</div>
@@ -149,8 +243,8 @@
 		<input type = "button" value="xml Speichern" data-bind="click: createXml" class="button-chess item-center"/>
 	</div>
 </div>
-<script>var frontEnd = new FrontEnd("board-goes-here", "config:minimal;");</script>
-<script type='text/javascript' src='../js/editor/EditorXmlCreator.js'></script>
-<script type='text/javascript' src='../js/editor/ViewModel.js'></script>
+<script>var frontEnd = new FrontEnd("board-goes-here", "config:editor;");</script>
+<script type='text/javascript' src='EditorXmlCreator.js'></script>
+<script type='text/javascript' src='ViewModel.js'></script>
 </body>
 </html>

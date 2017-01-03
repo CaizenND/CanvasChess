@@ -4,6 +4,7 @@ function EditorXmlCreator(viewmodel) {
 
 EditorXmlCreator.prototype.create = function() {
     var xmlDoc = this.createExerciseRoot();
+	this.createConfig(xmlDoc);
     this.createInput(xmlDoc);
     this.createTask(xmlDoc);
     this.createAnswers(xmlDoc);
@@ -30,6 +31,85 @@ EditorXmlCreator.prototype.createExerciseRoot = function() {
   xmlDoc.getElementsByTagName("exercise")[0].setAttributeNode(typeAttr);
 
   return xmlDoc;
+}
+EditorXmlCreator.prototype.createConfig = function(xmlDoc) {
+	var configElement = xmlDoc.createElement("config");
+	
+	var configString = this.addFenNotation();
+	configString += this.addReplayFilePath();
+	configString += this.addControlElementsConfig();
+	configString += this.addSize();
+	configString += this.addPlayers();
+	configString += this.addInteraction();
+	configString += this.addPromotion();
+	configString += this.addDifficulty();
+	configString += this.addEditor();
+	
+	var configElementText = xmlDoc.createTextNode(configString);
+	configElement.appendChild(configElementText);
+	xmlDoc.getElementsByTagName("exercise")[0].appendChild(configElement);
+}
+
+EditorXmlCreator.prototype.addFenNotation = function() {
+	if(this.viewmodel.startFEN() != "") {
+		return "startFEN:" + this.viewmodel.startFEN() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addReplayFilePath = function() {
+	if(this.viewmodel.replay() != "") {
+		return "replay:" + this.viewmodel.replay() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addControlElementsConfig = function() {
+	if(this.viewmodel.selectedConfig() != "") {
+		return "config:" + this.viewmodel.selectedConfig() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addSize = function() {
+	if(this.viewmodel.size() != "") {
+		return "size:" + this.viewmodel.size() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addPlayers = function() {
+	if(this.viewmodel.playerOne() == "" || this.viewmodel.playerTwo() == "")
+		return "";
+	return "players:" + this.viewmodel.playerOne() + "," + this.viewmodel.playerTwo() + ";";
+}
+
+EditorXmlCreator.prototype.addInteraction = function() {
+	if(this.viewmodel.selectedInteraction() != "") {
+		return "interaction:" + this.viewmodel.selectedInteraction() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addPromotion = function() {
+	if(this.viewmodel.selectedPromotion() != "") {
+		return "promotion:" + this.viewmodel.selectedPromotion() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addDifficulty = function() {
+	if(this.viewmodel.selectedDifficulty() != "") {
+		return "difficulty:" + this.viewmodel.selectedDifficulty() + ";";
+	} 
+	return "";
+}
+
+EditorXmlCreator.prototype.addEditor = function() {
+	if(this.viewmodel.editor()) {
+		return "editor;";
+	} 
+	return "";
 }
 
 EditorXmlCreator.prototype.createInput = function(xmlDoc) {

@@ -8,6 +8,17 @@ var ViewModel = function () {
 	this.skipMsg = ko.observable("");
 	this.correctAnswerMsg = ko.observable("");
 	
+	this.startFEN = ko.observable("");
+	this.replay = ko.observable("");
+	this.size = ko.observable("");
+	this.editor = ko.observable(false);	
+	this.playerOne = ko.observable("");
+	this.playerTwo = ko.observable("");
+	this.selectedConfig = ko.observable("");
+	this.selectedDifficulty = ko.observable("");
+	this.selectedPromotion = ko.observable("");
+	this.selectedInteraction = ko.observable("");
+	
 	this.answerToAdd = ko.observable("");
     this.answers = ko.observableArray([]); 
 	
@@ -17,10 +28,13 @@ var ViewModel = function () {
 	this.adviceToAdd = ko.observable("");
     this.advices = ko.observableArray([]); 
 	
+	this.configs = ko.observableArray(ConfigurationManager.configList);
+	
 	this.collapseAnswerContainer = ko.observable(true);
 	this.collapseFeedbackContainer = ko.observable(true);
 	this.collapseAdviceContainer = ko.observable(true);
 	this.collapseTaskContainer = ko.observable(true);
+	this.collapseConfigContainer = ko.observable(true);
 	
     this.addAnswer = function () {
         if ((this.answerToAdd() != "") && (this.answers.indexOf(this.answerToAdd()) < 0)){ // No duplicate
@@ -72,11 +86,16 @@ var ViewModel = function () {
 		this.toggleButtonPlusMinus(event.target);
 	}
 	
+	this.toggleConfigCollapse = function(data, event) {
+        this.collapseConfigContainer(!this.collapseConfigContainer());
+		this.toggleButtonPlusMinus(event.target);
+	}
+	
 	this.toggleButtonPlusMinus = function(button){
 		//button.innerHTML == "-" ? button.innerHTML = "+" : button.innerHTML = "-";
 		button.innerHTML == "-" ? button.appendChild(document.createTextNode("+")) : button.appendChild(document.createTextNode("-"));
    		button.removeChild(button.firstChild);
-	}
+	}	
 	
 	this.toggleButton = function(data, event) {
 		var button = event.target;
