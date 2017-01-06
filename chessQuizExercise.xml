@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<exercise type="chessQuiz">
+	<config>config:jackQuiz;</config>
+	<task>Gewinnen Sie in zwei Zügen.</task>
+	<advice>
+		<option> Richte dein Auge bei Sonnenaufgang auf den Läufer. </option>
+	</advice>
+</exercise>

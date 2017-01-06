@@ -97,6 +97,25 @@ var FrontEnd = (function(id, argumentString) {
   	window.open(URL.createObjectURL(file));
 	};
 
+	publicInterface.writeMovesToPageElement = function(target) {
+		var element;
+		if (typeof(target) == "string") {
+			element = document.getElementById(target);
+		} else {
+			element = target;
+		}
+		var history = engineInterface.getMoveHistory();
+		var moves = "";
+		for (var i = 0; i < history.length; i++) {
+			var move = history[i];
+			moves += move.start
+				+ move.target ;
+			if (i < history.length - 1) 
+				moves += ":";
+		}
+		element.value = moves;
+	};
+	
 	/**
 	 * Sets up the frontend for a game after the editor was used.
 	 * @param editorFEN		FEN-string that should be loaded as the starting board state

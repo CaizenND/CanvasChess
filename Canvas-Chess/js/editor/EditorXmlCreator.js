@@ -26,7 +26,7 @@ EditorXmlCreator.prototype.create = function() {
 EditorXmlCreator.prototype.createExerciseRoot = function() {
   var xmlDoc = document.implementation.createDocument(null, "exercise");
   typeAttr = xmlDoc.createAttribute("type");
-  typeAttr.nodeValue = "mc";
+  typeAttr.nodeValue = "chessMC";
 
   xmlDoc.getElementsByTagName("exercise")[0].setAttributeNode(typeAttr);
 

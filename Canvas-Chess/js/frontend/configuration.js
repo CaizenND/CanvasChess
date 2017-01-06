@@ -54,3 +54,40 @@ var EditorConfiguration = new Configuration();
 EditorConfiguration.name = "editor";
 EditorConfiguration.showEditor = true;
 ConfigurationManager.addConfiguration(EditorConfiguration);
+
+var JackMCConfiguration = new Configuration();
+JackMCConfiguration.name = "jackMC";
+JackMCConfiguration.showPawnPromotion = true;
+JackMCConfiguration.defaultPawnPromotion = "queen"; // queen, rook, knight, bishop
+JackMCConfiguration.showAISelect = false;
+JackMCConfiguration.showFeedback = false;
+ConfigurationManager.addConfiguration(JackMCConfiguration);
+
+var JackSolutionConfiguration = new Configuration();
+JackSolutionConfiguration.name = "jackSolution";
+JackSolutionConfiguration.showInteractionMode = false;
+JackSolutionConfiguration.showPawnPromotion = false;
+JackSolutionConfiguration.showAISelect = false;
+JackSolutionConfiguration.showDifficulty = false;
+JackSolutionConfiguration.showExport = false;
+JackSolutionConfiguration.showLogging = false;
+JackSolutionConfiguration.allowLoggingInteraction = false;
+JackSolutionConfiguration.showFeedback = false;
+ConfigurationManager.addConfiguration(JackSolutionConfiguration);
+
+var JackQuizConfiguration = new Configuration();
+JackQuizConfiguration.name = "jackQuiz";
+JackQuizConfiguration.showAISelect = false;
+JackQuizConfiguration.showDifficulty = false;
+JackQuizConfiguration.showExport = false;
+JackQuizConfiguration.showFeedback = false;
+ConfigurationManager.addConfiguration(JackQuizConfiguration);
+
+var JackGameConfiguration = new Configuration();
+JackGameConfiguration.name = "jackGame";
+JackGameConfiguration.showAISelect = false;
+JackGameConfiguration.defaultAI = ["human", "computer"]; //[white, black] - human, computer
+JackGameConfiguration.showDifficulty = false;
+JackGameConfiguration.showExport = false;
+JackGameConfiguration.allowLoggingInteraction = false;
+ConfigurationManager.addConfiguration(JackGameConfiguration);
