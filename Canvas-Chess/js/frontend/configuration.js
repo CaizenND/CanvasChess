@@ -9,7 +9,7 @@ var Configuration = function() {
   this.name = undefined;
   this.size = 55; // >55
   this.showInteractionMode = true;
-  this.defaultInteractionMode = 2; // 1, 2
+  this.defaultInteractionMode = 2; // 0, 1, 2
   this.showPawnPromotion = true;
   this.defaultPawnPromotion = "queen"; // queen, rook, knight, bishop
   this.showAISelect = true;
@@ -55,25 +55,15 @@ EditorConfiguration.name = "editor";
 EditorConfiguration.showEditor = true;
 ConfigurationManager.addConfiguration(EditorConfiguration);
 
+/*-----------------------Jack specififc configurations-----------------------*/
+
 var JackMCConfiguration = new Configuration();
 JackMCConfiguration.name = "jackMC";
-JackMCConfiguration.showPawnPromotion = true;
-JackMCConfiguration.defaultPawnPromotion = "queen"; // queen, rook, knight, bishop
 JackMCConfiguration.showAISelect = false;
+JackMCConfiguration.showDifficulty = false;
+JackMCConfiguration.showExport = false;
 JackMCConfiguration.showFeedback = false;
 ConfigurationManager.addConfiguration(JackMCConfiguration);
-
-var JackSolutionConfiguration = new Configuration();
-JackSolutionConfiguration.name = "jackSolution";
-JackSolutionConfiguration.showInteractionMode = false;
-JackSolutionConfiguration.showPawnPromotion = false;
-JackSolutionConfiguration.showAISelect = false;
-JackSolutionConfiguration.showDifficulty = false;
-JackSolutionConfiguration.showExport = false;
-JackSolutionConfiguration.showLogging = false;
-JackSolutionConfiguration.allowLoggingInteraction = false;
-JackSolutionConfiguration.showFeedback = false;
-ConfigurationManager.addConfiguration(JackSolutionConfiguration);
 
 var JackQuizConfiguration = new Configuration();
 JackQuizConfiguration.name = "jackQuiz";
@@ -91,3 +81,17 @@ JackGameConfiguration.showDifficulty = false;
 JackGameConfiguration.showExport = false;
 JackGameConfiguration.allowLoggingInteraction = false;
 ConfigurationManager.addConfiguration(JackGameConfiguration);
+
+var JackSolutionConfiguration = new Configuration();
+JackSolutionConfiguration.name = "jackSolution";
+JackSolutionConfiguration.showInteractionMode = false;
+JackSolutionConfiguration.defaultInteractionMode = 0; // 0, 1, 2
+JackSolutionConfiguration.showPawnPromotion = false;
+JackSolutionConfiguration.showAISelect = false;
+JackSolutionConfiguration.showDifficulty = false;
+JackSolutionConfiguration.showReset = false;
+JackSolutionConfiguration.showExport = false;
+JackSolutionConfiguration.showLogging = false;
+JackSolutionConfiguration.allowLoggingInteraction = false;
+JackSolutionConfiguration.showFeedback = false;
+ConfigurationManager.addConfiguration(JackSolutionConfiguration);

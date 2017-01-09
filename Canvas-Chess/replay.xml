@@ -1,83 +1,83 @@
-<ChessGame>
-	<StartingPosition>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</StartingPosition>
-	<Move id="1">
-		<Start>d2</Start>
-		<Target>d4</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="2">
-		<Start>c7</Start>
-		<Target>c5</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="3">
-		<Start>d4</Start>
-		<Target>c5</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="4">
-		<Start>e7</Start>
-		<Target>e5</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="5">
-		<Start>e2</Start>
-		<Target>e4</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="6">
-		<Start>f8</Start>
-		<Target>c5</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="7">
-		<Start>f2</Start>
-		<Target>f3</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="8">
-		<Start>f7</Start>
-		<Target>f5</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="9">
-		<Start>e4</Start>
-		<Target>f5</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="10">
-		<Start>g7</Start>
-		<Target>g6</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="11">
-		<Start>f5</Start>
-		<Target>g6</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="12">
-		<Start>h7</Start>
-		<Target>g6</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="13">
-		<Start>g2</Start>
-		<Target>g4</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="14">
-		<Start>d8</Start>
-		<Target>h4</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="15">
-		<Start>e1</Start>
-		<Target>e2</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-	<Move id="16">
-		<Start>h4</Start>
-		<Target>f2</Target>
-		<Promotion>queen</Promotion>
-	</Move>
-</ChessGame>
+<chessgame>
+	<startingposition>rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1</startingposition>
+	<move id="1">
+		<start>d2</start>
+		<target>d4</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="2">
+		<start>c7</start>
+		<target>c5</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="3">
+		<start>d4</start>
+		<target>c5</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="4">
+		<start>e7</start>
+		<target>e5</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="5">
+		<start>e2</start>
+		<target>e4</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="6">
+		<start>f8</start>
+		<target>c5</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="7">
+		<start>f2</start>
+		<target>f3</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="8">
+		<start>f7</start>
+		<target>f5</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="9">
+		<start>e4</start>
+		<target>f5</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="10">
+		<start>g7</start>
+		<target>g6</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="11">
+		<start>f5</start>
+		<target>g6</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="12">
+		<start>h7</start>
+		<target>g6</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="13">
+		<start>g2</start>
+		<target>g4</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="14">
+		<start>d8</start>
+		<target>h4</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="15">
+		<start>e1</start>
+		<target>e2</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="16">
+		<start>h4</start>
+		<target>f2</target>
+		<promotion>queen</promotion>
+	</move>
+</chessgame>

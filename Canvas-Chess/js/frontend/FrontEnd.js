@@ -16,7 +16,7 @@ var FrontEnd = (function(id, argumentString) {
 	}
 
 	// private attributes
-	var interactionMode = 2;		// Drag & Drop (1), Select & Move (2)
+	var interactionMode = 2;		// No interaction (0), Drag & Drop (1), Select & Move (2)
 
 	var replay = null;
 
@@ -78,44 +78,46 @@ var FrontEnd = (function(id, argumentString) {
 	/**
 	 * Opens a new tab in which the current game (starting position in FEN-notation
 	 * and each move) is displayed in an xml-format that can later be imported.
+	 * @return true, if move was successfull / false, if move was not successfull
+
 	 */
 	publicInterface.exportGameToXML = function() {
 		var fen = engineInterface.getStartFEN();
 		if (fen != null) {
-			var xml = "<ChessGame>\n\t<StartingPosition>" + fen + "</StartingPosition>";
+			var xml = "<chessgame>\n\t<startingposition>" + fen + "</startingposition>";
 			var history = engineInterface.getMoveHistory();
 			for (var i = 0; i < history.length; i++) {
 				var move = history[i];
-				xml += "\n\t<Move id=\"" + (i+1) + "\">\n\t\t<Start>" + move.start
-					+ "</Start>\n\t\t<Target>" + move.target + "</Target>\n\t\t<Promotion>"
-					+ move.promotion + "</Promotion>\n\t</Move>"
+				xml += "\n\t<move id=\"" + (i+1) + "\">\n\t\t<start>" + move.start
+					+ "</start>\n\t\t<target>" + move.target + "</target>\n\t\t<promotion>"
+					+ move.promotion + "</promotion>\n\t</move>"
 			}
-			xml += "\n</ChessGame>";
+			xml += "\n</chessgame>";
 		}
 		var a = document.getElementById("a");
   	var file = new Blob([xml], {type: "text/plain"});
   	window.open(URL.createObjectURL(file));
 	};
 
-	publicInterface.writeMovesToPageElement = function(target) {
-		var element;
-		if (typeof(target) == "string") {
-			element = document.getElementById(target);
-		} else {
-			element = target;
+	/**
+	 * Generates a String which contains all moves of the current game seperated
+	 * by a ".".
+	 * @return String, containing all moves
+	 */
+	publicInterface.exportGameToString = function() {
+		var fen = engineInterface.getStartFEN();
+		var gameString = "";
+		if (fen != null) {
+			gameString = fen;
+			var history = engineInterface.getMoveHistory();
+			for (var i = 0; i < history.length; i++) {
+				var move = history[i];
+				gameString += "." + move.start + move.target + move.promotion;
+			}
 		}
-		var history = engineInterface.getMoveHistory();
-		var moves = "";
-		for (var i = 0; i < history.length; i++) {
-			var move = history[i];
-			moves += move.start
-				+ move.target ;
-			if (i < history.length - 1) 
-				moves += ":";
-		}
-		element.value = moves;
+		return gameString;
 	};
-	
+
 	/**
 	 * Sets up the frontend for a game after the editor was used.
 	 * @param editorFEN		FEN-string that should be loaded as the starting board state
@@ -359,6 +361,7 @@ var FrontEnd = (function(id, argumentString) {
 					case "players": defaultAI = argumentsPlayers(argument[1]); break;
 					case "promotion": promotion = argumentPromotion(argument[1]); break;
 					case "replay": argumentReplay(argument[1]); break;
+					case "replayString": argumentReplayString(argument[1]); break
 					case "size": size = argumemntSize(argument[1]); break;
 					case "startFEN": startFEN = argument[1]; break;
 					default: break;
@@ -444,7 +447,7 @@ var FrontEnd = (function(id, argumentString) {
 	 */
 	var argumentInteraction = function(value) {
 		var mode = parseInt(value);
-		if (mode >= 1 && mode <= 2) {
+		if (mode >= 0 && mode <= 2) {
 			return mode;
 		}
 		return null;
@@ -486,6 +489,29 @@ var FrontEnd = (function(id, argumentString) {
 		if (checkForXML(value)) {
 			// parse xml file
 			replay = parseXMLFile(value);
+		}
+	};
+
+	/**
+	 * Processes the "replayString" argument by creating a replay for the passed value.
+	 * @param value		Value of the "replayString" argument
+	 */
+	var argumentReplayString = function(value) {
+		var chessGame = value.split(".");
+		var startFEN = chessGame[0];
+		var movelist = [];
+		for (var i = 1; i < chessGame.length; i++) {
+			var moveString = chessGame[i];
+			var move = {
+				start: moveString.substring(0, 2),
+				target: moveString.substring(2, 4),
+				promotion: moveString.substring(4)
+			};
+			movelist.push(move);
+		}
+		replay = {
+			startFEN: startFEN,
+	    movelist: movelist
 		}
 	};
 

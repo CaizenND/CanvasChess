@@ -1,1 +1,23 @@
-<?xml version="1.0" encoding="iso-8859-1"?><exercise type="chessMC"><config>config:jackMC;replay:replay.xml;</config><input/><task>Welche besonderen Z�ge sind in dieser Stellung m�glich?</task><answers randomize="true"><option>Schwarz klein</option><option>Schwarz groß</option><option>Weiß klein</option><option>Weiß groß</option></answers><feedback><choice pattern="**1*">Nein, da sich der Turm just bewegt hat du Nase.</choice></feedback><advice><option>Es geht um Rochaden</option></advice><skipmessage>Irgendwas</skipmessage><correctanswer><choice pattern="1001"/><message>Sehr gut dein Schachniveau entspricht dem eines 4 j�hrigen.</message></correctanswer></exercise>
+<?xml version="1.0" encoding="iso-8859-1"?>
+<exercise type="chessMC">
+  <config>config:jackMC;replay:replay.xml;</config>
+  <input/>
+    <task>Welche besonderen Z�ge sind in dieser Stellung m�glich?</task>
+    <answers randomize="true">
+      <option>Schwarz klein</option>
+      <option>Schwarz groß</option>
+      <option>Weiß klein</option>
+      <option>Weiß groß</option>
+    </answers>
+    <feedback>
+      <choice pattern="**1*">Nein, da sich der Turm just bewegt hat du Nase.</choice>
+    </feedback>
+    <advice>
+      <option>Es geht um Rochaden</option>
+    </advice>
+    <skipmessage>Irgendwas</skipmessage>
+    <correctanswer>
+      <choice pattern="1001"/>
+      <message>Sehr gut dein Schachniveau entspricht dem eines 4 j�hrigen.</message>
+    </correctanswer>
+  </exercise>

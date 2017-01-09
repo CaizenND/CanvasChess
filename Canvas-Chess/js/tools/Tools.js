@@ -54,16 +54,16 @@ var parseXMLFile = function(filename) {
   var movelist = [];
 
   if (xmlDoc != null) {
-    if (xmlDoc.getElementsByTagName("ChessGame").length > 0) {
-      var chessGameNode = xmlDoc.getElementsByTagName("ChessGame")[0];
-      if (chessGameNode.getElementsByTagName("StartingPosition").length > 0) {
-        var startingPositionNode = chessGameNode.getElementsByTagName("StartingPosition")[0];
-        if (startingPositionNode.childNodes.length > 0) {
-          if (startingPositionNode.childNodes[0].nodeType == Node.TEXT_NODE) {
-            startFEN = startingPositionNode.childNodes[0].nodeValue;
+    if (xmlDoc.getElementsByTagName("chessgame").length > 0) {
+      var chessgameNode = xmlDoc.getElementsByTagName("chessgame")[0];
+      if (chessgameNode.getElementsByTagName("startingposition").length > 0) {
+        var startingpositionNode = chessgameNode.getElementsByTagName("startingposition")[0];
+        if (startingpositionNode.childNodes.length > 0) {
+          if (startingpositionNode.childNodes[0].nodeType == Node.TEXT_NODE) {
+            startFEN = startingpositionNode.childNodes[0].nodeValue;
             var idCounter = 1;
             var moveError = false;
-            var moveNodes = chessGameNode.getElementsByTagName("Move");
+            var moveNodes = chessgameNode.getElementsByTagName("move");
             for (var i = 0; i < moveNodes.length; i++) {
               var currentMoveNode = moveNodes[i];
               var move = parseMoveNode(currentMoveNode, idCounter, filename);
@@ -78,16 +78,16 @@ var parseXMLFile = function(filename) {
               movelist = [];
             }
           } else {
-            console.error("\"StartingPosition\"-element in file \"" + filename + "\" does not have the right format.");
+            console.error("\"startingposition\"-element in file \"" + filename + "\" does not have the right format.");
           }
         } else {
-          console.error("\"StartingPosition\"-element in file \"" + filename + "\" is empty.");
+          console.error("\"startingposition\"-element in file \"" + filename + "\" is empty.");
         }
       } else {
-        console.error("No \"StartingPosition\"-tag in file \"" + filename + "\" found.");
+        console.error("No \"startingposition\"-tag in file \"" + filename + "\" found.");
       }
     } else {
-      console.error("No \"ChessGame\"-tag in file \"" + filename + "\" found.");
+      console.error("No \"chessgame\"-tag in file \"" + filename + "\" found.");
     }
   } else {
     console.error("Invalid xml file \"" + filename + "\".");
@@ -116,65 +116,65 @@ var parseMoveNode = function(moveNode, expectedID, filename) {
   if (moveNode.attributes.getNamedItem("id") != null) {
     var id = moveNode.attributes.getNamedItem("id").nodeValue;
     if (id != expectedID) {
-      console.error("\"Move\"-element " + expectedID + " in file \"" + filename + "\" does not have the right ID (is " + id + ").");
+      console.error("\"move\"-element " + expectedID + " in file \"" + filename + "\" does not have the right ID (is " + id + ").");
       moveError = true;
     }
   } else {
-    console.error("\"Move\"-element " + expectedID + " in file \"" + filename + "\" does not have an ID attribute.");
+    console.error("\"move\"-element " + expectedID + " in file \"" + filename + "\" does not have an ID attribute.");
     moveError = true;
   }
 
-  if (moveNode.getElementsByTagName("Start").length > 0) {
-    var startNode = moveNode.getElementsByTagName("Start")[0];
+  if (moveNode.getElementsByTagName("start").length > 0) {
+    var startNode = moveNode.getElementsByTagName("start")[0];
     if (startNode.childNodes.length > 0) {
       if (startNode.childNodes[0].nodeType == Node.TEXT_NODE) {
         startField = startNode.childNodes[0].nodeValue;
       } else {
-        console.error("\"Start\"-element " + expectedID + " in file \"" + filename + "\" does not have the right format.");
+        console.error("\"start\"-element " + expectedID + " in file \"" + filename + "\" does not have the right format.");
         moveError = true;
       }
     } else {
-      console.error("\"Start\"-element " + expectedID + " in file \"" + filename + "\" is empty.");
+      console.error("\"start\"-element " + expectedID + " in file \"" + filename + "\" is empty.");
       moveError = true;
     }
   } else {
-    console.error("\"Move\"-element " + expectedID + " in file \"" + filename + "\" is does not contain a \"Start\"-element .");
+    console.error("\"move\"-element " + expectedID + " in file \"" + filename + "\" does not contain a \"start\"-element .");
     moveError = true;
   }
 
-  if (moveNode.getElementsByTagName("Target").length > 0) {
-    var targetNode = moveNode.getElementsByTagName("Target")[0];
+  if (moveNode.getElementsByTagName("target").length > 0) {
+    var targetNode = moveNode.getElementsByTagName("target")[0];
     if (targetNode.childNodes.length > 0) {
       if (targetNode.childNodes[0].nodeType == Node.TEXT_NODE) {
         targetField = targetNode.childNodes[0].nodeValue;
       } else {
-        console.error("\"Target\"-element " + expectedID + " in file \"" + filename + "\" does not have the right format.");
+        console.error("\"target\"-element " + expectedID + " in file \"" + filename + "\" does not have the right format.");
         moveError = true;
       }
     } else {
-      console.error("\"Target\"-element " + expectedID + " in file \"" + filename + "\" is empty.");
+      console.error("\"target\"-element " + expectedID + " in file \"" + filename + "\" is empty.");
       moveError = true;
     }
   } else {
-    console.error("\"Move\"-element " + expectedID + " in file \"" + filename + "\" is does not contain a \"Target\"-element .");
+    console.error("\"move\"-element " + expectedID + " in file \"" + filename + "\" does not contain a \"target\"-element .");
     moveError = true;
   }
 
-  if (moveNode.getElementsByTagName("Promotion").length > 0) {
-    var promotionNode = moveNode.getElementsByTagName("Promotion")[0];
+  if (moveNode.getElementsByTagName("promotion").length > 0) {
+    var promotionNode = moveNode.getElementsByTagName("promotion")[0];
     if (promotionNode.childNodes.length > 0) {
       if (promotionNode.childNodes[0].nodeType == Node.TEXT_NODE) {
         promotion = promotionNode.childNodes[0].nodeValue;
       } else {
-        console.error("\"Promotion\"-element " + expectedID + " in file \"" + filename + "\" does not have the right format.");
+        console.error("\"promotion\"-element " + expectedID + " in file \"" + filename + "\" does not have the right format.");
         moveError = true;
       }
     } else {
-      console.error("\"Promotion\"-element " + expectedID + " in file \"" + filename + "\" is empty.");
+      console.error("\"promotion\"-element " + expectedID + " in file \"" + filename + "\" is empty.");
       moveError = true;
     }
   } else {
-    console.error("\"Move\"-element " + expectedID + " in file \"" + filename + "\" is does not contain a \"Promotion\"-element .");
+    console.error("\"move\"-element " + expectedID + " in file \"" + filename + "\" is does not contain a \"promotion\"-element .");
     moveError = true;
   }
 

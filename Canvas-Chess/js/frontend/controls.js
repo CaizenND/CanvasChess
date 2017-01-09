@@ -253,6 +253,11 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
     exportButton.onclick = frontEnd.exportGameToXML;
   }
 
+  if (!gameControls.hasChildNodes()) {
+    parentElement.removeChild(gameControls.meta);
+    parentElement.removeChild(gameControls);
+  }
+
   return gameControls;
 };
 
