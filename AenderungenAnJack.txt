@@ -41,3 +41,4 @@ TODO:
 	- front end methoden kommentieren
 	- Attribut hinzufügen --> Züge für schwarz ignorieren
 	- Design der Seiten anpassen so das es hübsch aussieht (so wie Nils Mutter)
+	- xhtml < escapen

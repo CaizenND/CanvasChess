@@ -5,4 +5,14 @@
 		<target>h4</target>
 		<promotion>queen</promotion>
 	</move>
+	<move id="2">
+		<start>e8</start>
+		<target>e7</target>
+		<promotion>queen</promotion>
+	</move>
+	<move id="3">
+		<start>a1</start>
+		<target>a4</target>
+		<promotion>queen</promotion>
+	</move>
 </chessgame>
