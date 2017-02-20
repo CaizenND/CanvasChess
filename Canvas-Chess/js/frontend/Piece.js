@@ -37,10 +37,10 @@ Piece.prototype.setSize = function(size) {
 /**
  * Draws the piece / image on the canvas.
  */
-Piece.prototype.draw = function() {
-  var ctx = this.board.canvas.getContext("2d");
+Piece.prototype.draw = function(canvas, dragged) {
+  var ctx = canvas.getContext("2d");
   ctx.save();
-  if (this.board.dragging.draggedPiece == this) {
+  if (dragged != undefined && dragged) {
     ctx.shadowColor = "#000000";
     ctx.shadowBlur = 10;
     ctx.shadowOffsetX = 0;
@@ -54,10 +54,10 @@ Piece.prototype.draw = function() {
  * Loads the correct image for the pieces color and type and draws it to the
  * canvas.
  */
-Piece.prototype.loadImage = function() {
+Piece.prototype.loadImage = function(canvas) {
   this.image.onload = (function(piece) {
     return function() {
-      piece.draw();
+      piece.draw(canvas);
     };
   })(this);
   var imgPath = "../img/" + this.color + "_" + this.type + ".gif";

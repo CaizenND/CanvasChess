@@ -4,9 +4,8 @@
  * Module design pattern
  * Provides an interface for a specific chess engine to make it usable for the
  * frontend.
- * @param frontEnd 		The FrontEnd object, which should use the engine
  */
-var EngineInterface = (function(frontEnd) {
+var EngineInterface = (function() {
 
 	// public attributes
 	var publicInterface = {
@@ -23,7 +22,6 @@ var EngineInterface = (function(frontEnd) {
 	var mate = false;
 	var stale = false;
 	var pawnPromotion = "queen";
-	var frontEnd = frontEnd;
 
 	// public methods
 
@@ -40,25 +38,31 @@ var EngineInterface = (function(frontEnd) {
 	/**
 	 * Tries to perform a move in the engine.
 	 * @param move		{start-field, target-field, promotion	(normally not needed)}
-	 * @return true, if move was successfull / false, if move was not successfull
+	 * @return moveResult as {ok, moveNumber, string}
 	 */
 	publicInterface.move = function(move) {
 		if (move.promotion == null) {
 			move.promotion = pawnPromotion;
 		}
 		var p4Promotion = convertPieceNameToNumber(move.promotion);
-		var moveResult = engine.move(move.start, move.target, p4Promotion);
-		if (moveResult.flags == P4_MOVE_CHECKMATE) {
+		var engineResult = engine.move(move.start, move.target, p4Promotion);
+		if (engineResult.flags == P4_MOVE_CHECKMATE) {
 			mate = true;
-		} else if (moveResult.flags == P4_MOVE_STALEMATE) {
+		} else if (engineResult.flags == P4_MOVE_STALEMATE) {
 			stale = true;
 		}
+		var moveResult = {
+			ok: engineResult.ok,
+			moveNumber: -1,
+			string: ""
+		};
 		if (moveResult.ok) {
-			frontEnd.logMove(moveResult.string, engine.moveno);
+			moveResult.moveNumber = engine.moveno;
+			moveResult.string = engineResult.string;
 		} else {
 			p4_log("bad move!", move);
 		}
-		return moveResult.ok;
+		return moveResult;
 	};
 
 	/**

@@ -12,7 +12,7 @@
   float: left;
 }
 
-.boardCanvas {
+.canvas {
   border: 1px solid rgb(173, 173, 173);
   -webkit-box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;
   box-shadow: rgba(0, 0, 0, 0.121569) 5px 5px 5px 0px;

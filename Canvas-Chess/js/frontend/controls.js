@@ -44,10 +44,10 @@ var createMetaAndContainer = function(parentElement, title) {
  * @param parentElement     HTML node element that should contain the new nodes
  * @param frontEnd          Frontend object that should accessed by the controls
  * @param engineInterface   Engine interface object that should accessed by the controls
+ * @param config            The configuration object for the frontend
  * @return DIV element containing the controls
  */
-var createGameControls = function(parentElement, frontEnd, engineInterface) {
-  var config = frontEnd.configuration;
+var createGameControls = function(parentElement, frontEnd, engineInterface, config) {
 
   // Container & meta-container (collapse)
   var gameControls = createMetaAndContainer(parentElement, "Game controls");
@@ -266,10 +266,10 @@ var createGameControls = function(parentElement, frontEnd, engineInterface) {
   * Uses the defined configurations.
   * @param parentElement     HTML node element that should contain the new nodes
   * @param frontEnd          Frontend object that should accessed by the controls
+  * @param config            The configuration object for the frontend
   * @return DIV element containing the controls
   */
-var createLoggingControls = function(parentElement, frontEnd) {
-  var config = frontEnd.configuration;
+var createLoggingControls = function(parentElement, frontEnd, config) {
 
   // Container & meta-container (collapse)
   if (config.showLogging) {
@@ -283,7 +283,6 @@ var createLoggingControls = function(parentElement, frontEnd) {
 
  /**
   * Creates the replay controls for the frontend.
-  * Uses the defined configurations.
   * @param parentElement     HTML node element that should contain the new nodes
   * @param frontEnd          Frontend object that should accessed by the controls
   * @return DIV element containing the controls
@@ -314,7 +313,6 @@ var createReplayControls = function(parentElement, frontEnd) {
 
  /**
   * Creates the editor controls for the frontend.
-  * Uses the defined configurations.
   * @param parentElement    HTML node element that should contain the new nodes
   * @param boardEditor      Board editor object that should accessed by the controls
   * @return DIV element containing the controls

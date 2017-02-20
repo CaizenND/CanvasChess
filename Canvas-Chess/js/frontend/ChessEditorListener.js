@@ -4,47 +4,47 @@
  * Tries to find the clicked piece (from the editor- or the chessboard-area) and
  * marks it as dragged. Creates a new piece objekt and adds it to the chessboard
  * if piece in editor area was clicked.
- * Note: "this" has to be binded to the boardeditor objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function EditorStartListener(evt) {
-  var board = this.frontEnd.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
+  var pieces = this.boardEditor.pieces;
 
   var bRect = canvas.getBoundingClientRect();
   mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
   mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
-  if (mouseX >= 0 && mouseX <= board.posX) {
-    for (var i = 0; i < this.pieces.length; i++) {
-      var piece = this.pieces[i];
+  if (mouseX >= 0 && mouseX <= this.chessboard.posX) {
+    for (var i = 0; i < pieces.length; i++) {
+      var piece = pieces[i];
       if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
         && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
-          board.dragging.dragHoldX = mouseX - piece.posX;
-          board.dragging.dragHoldY = mouseY - piece.posY;
-          var newPiece = new Piece(piece.color, piece.type, board);
+          this.chessboard.dragging.dragHoldX = mouseX - piece.posX;
+          this.chessboard.dragging.dragHoldY = mouseY - piece.posY;
+          var newPiece = new Piece(piece.color, piece.type, this.chessboard);
           newPiece.setPosition(piece.posX, piece.posY);
           newPiece.setSize(piece.size);
-          newPiece.loadImage();
-          board.dragging.draggedPiece = newPiece;
+          newPiece.loadImage(canvas);
+          this.chessboard.dragging.draggedPiece = newPiece;
       }
     }
-  } else if (mouseX >= board.posX && mouseX <= board.posX + board.width
-    && mouseY >= board.posY && mouseY <= board.posY + board.height) {
-      for (var i = 0; i < board.pieces.length; i++) {
-        var piece = board.pieces[i];
+  } else if (mouseX >= this.chessboard.posX && mouseX <= this.chessboard.posX + this.chessboard.width
+    && mouseY >= this.chessboard.posY && mouseY <= this.chessboard.posY + this.chessboard.height) {
+      for (var i = 0; i < this.chessboard.pieces.length; i++) {
+        var piece = this.chessboard.pieces[i];
         if (mouseX >= piece.posX && mouseX <= piece.posX + piece.size
           && mouseY >= piece.posY && mouseY <= piece.posY + piece.size) {
-            board.dragging.dragHoldX = mouseX - piece.posX;
-            board.dragging.dragHoldY = mouseY - piece.posY;
-            board.dragging.draggedPiece = piece;
+            this.chessboard.dragging.dragHoldX = mouseX - piece.posX;
+            this.chessboard.dragging.dragHoldY = mouseY - piece.posY;
+            this.chessboard.dragging.draggedPiece = piece;
             break;
         }
       }
   }
 
-  if (board.dragging.draggedPiece != null) {
+  if (this.chessboard.dragging.draggedPiece != null) {
     var interactionListener = canvas.interactionListener;
     interactionListener.moveListener = EditorMoveListener.bind(this);
     canvas.addEventListener("mousemove", interactionListener.moveListener, false);
@@ -62,17 +62,16 @@ function EditorStartListener(evt) {
  * Mouse-move listener
  * Recalculates the position of the dragged piece.
  * Triggers a redraw of the canvas.
- * Note: "this" has to be binded to the boardeditor objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function EditorMoveListener(evt) {
-  var board = this.frontEnd.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
 
   var posX;
   var posY;
-  var shapeRad = board.dragging.draggedPiece.size;
+  var shapeRad = this.chessboard.dragging.draggedPiece.size;
   var minX = 0;
   var maxX = canvas.width - shapeRad;
   var minY = 0;
@@ -84,13 +83,13 @@ function EditorMoveListener(evt) {
   mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
   //clamp x and y positions to prevent object from dragging outside of canvas
-  posX = mouseX - board.dragging.dragHoldX;
+  posX = mouseX - this.chessboard.dragging.dragHoldX;
   posX = (posX < minX) ? minX : ((posX > maxX) ? maxX : posX);
-  posY = mouseY - board.dragging.dragHoldY;
+  posY = mouseY - this.chessboard.dragging.dragHoldY;
   posY = (posY < minY) ? minY : ((posY > maxY) ? maxY : posY);
 
-  board.dragging.draggedPiece.posX = posX;
-  board.dragging.draggedPiece.posY = posY;
+  this.chessboard.dragging.draggedPiece.posX = posX;
+  this.chessboard.dragging.draggedPiece.posY = posY;
 
   canvas.draw()
 
@@ -104,13 +103,12 @@ function EditorMoveListener(evt) {
  * to the target field.
  * Triggers a redraw of the canvas.
  * Updates editor controls with possible castling moves.
- * Note: "this" has to be binded to the boardeditor objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function EditorTargetListener(evt) {
-  var board = this.frontEnd.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
   var interactionListener = canvas.interactionListener;
 
   if (interactionListener.startEvent != evt) {
@@ -119,16 +117,16 @@ function EditorTargetListener(evt) {
     mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
     mouseY = (evt.clientY - bRect.top)*(canvas.height/bRect.height);
 
-    if (board.pieces.includes(board.dragging.draggedPiece)) {
+    if (this.chessboard.pieces.includes(this.chessboard.dragging.draggedPiece)) {
         // remove piece from arry containing all pieces on board
-        var index = board.pieces.indexOf(board.dragging.draggedPiece);
-        board.pieces.splice(index, 1);
+        var index = this.chessboard.pieces.indexOf(this.chessboard.dragging.draggedPiece);
+        this.chessboard.pieces.splice(index, 1);
     }
 
-    var piece = board.dragging.draggedPiece;
+    var piece = this.chessboard.dragging.draggedPiece;
     for (var i = 0; i < 8; i++) {
       for (var j = 0; j < 8; j++) {
-        var currentField = board.fields[i][j];
+        var currentField = this.chessboard.fields[i][j];
 
         // search starting field
         if (currentField.piece == piece) {
@@ -139,12 +137,12 @@ function EditorTargetListener(evt) {
         if (mouseX >= currentField.posX && mouseX <= currentField.posX + currentField.size
           && mouseY >= currentField.posY && mouseY <= currentField.posY + currentField.size) {
             if (currentField.piece != null) {
-              var index = board.pieces.indexOf(currentField.piece);
-              board.pieces.splice(index, 1);
+              var index = this.chessboard.pieces.indexOf(currentField.piece);
+              this.chessboard.pieces.splice(index, 1);
             }
-            currentField.setPiece(board.dragging.draggedPiece);
-            if (!board.pieces.includes(board.dragging.draggedPiece)) {
-              board.pieces.push(board.dragging.draggedPiece);
+            currentField.setPiece(this.chessboard.dragging.draggedPiece);
+            if (!this.chessboard.pieces.includes(this.chessboard.dragging.draggedPiece)) {
+              this.chessboard.pieces.push(this.chessboard.dragging.draggedPiece);
             }
         }
       }
@@ -159,9 +157,10 @@ function EditorTargetListener(evt) {
   canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
   interactionListener.startEvent = null;
 
-  board.dragging.draggedPiece = null;
+  this.chessboard.dragging.draggedPiece = null;
   canvas.draw();
-  this.checkCastling();
+  var castling = this.chessboard.checkCastling();
+  this.boardEditor.updateCastlingOptions(castling);
 
   return false;
 };

@@ -2,13 +2,13 @@
 /**
  * Mouse-down listener (Drag & Drop)
  * Tries to find the clicked piece and marks it as dragged.
- * Note: "this" has to be binded to the frontend objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function GameStartListenerDown(evt) {
   var board = this.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
 
   var bRect = canvas.getBoundingClientRect();
   mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
@@ -41,13 +41,13 @@ function GameStartListenerDown(evt) {
 /**
  * Mouse-up listener (Select & Move)
  * Tries to find the clicked piece and marks it as dragged.
- * Note: "this" has to be binded to the frontend objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function GameStartListenerUp(evt) {
   var board = this.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
 
   var bRect = canvas.getBoundingClientRect();
   mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);
@@ -82,13 +82,13 @@ function GameStartListenerUp(evt) {
  * Mouse-move listener
  * Recalculates the position of the dragged piece.
  * Triggers a redraw of the canvas.
- * Note: "this" has to be binded to the frontend objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function GameMoveListener(evt) {
   var board = this.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
 
   var posX;
   var posY;
@@ -122,13 +122,13 @@ function GameMoveListener(evt) {
  * Tries to find the start- and target-field for the current move and calls the
  * "move" function of the frontend.
  * Triggers a reload of the boardstate from the engine.
- * Note: "this" has to be binded to the frontend objekt.
+ * Note: "this" has to be bound to the frontend objekt.
  * @param evt   Mouse event that triggered the listener
  * @return false
  */
 function GameTargetListener(evt) {
   var board = this.chessboard;
-  var canvas = board.canvas;
+  var canvas = this.canvas;
 
   var bRect = canvas.getBoundingClientRect();
   mouseX = (evt.clientX - bRect.left)*(canvas.width/bRect.width);

@@ -1,12 +1,9 @@
 
 /**
  * Constructor
- * Creates the Chessboard by initializing the relevant attributes and
- * registering itself at the canvas.
- * @param canvas    The canvas, on which the Chessboard should be drawn
+ * Creates the Chessboard by initializing the relevant attributes.
  */
-function Chessboard(canvas) {
-  this.canvas = canvas;
+function Chessboard() {
   this.fields = [];
   this.pieces = [];
   // Weiß oben oder unten?
@@ -24,7 +21,6 @@ function Chessboard(canvas) {
   this.BOARD_OFFSET_LEFT = 44; // Beschriftung unten
   this.CANVAS_OFFSET_TOP = 0; // feier Raum oben
   this.CANVAS_OFFSET_LEFT = 0; // freier Raum unten
-  this.canvas.addDrawableObject(this, false);
 };
 
 /**
@@ -36,6 +32,7 @@ Chessboard.prototype.setup = function() {
   this.posY = this.CANVAS_OFFSET_TOP;
   this.width = this.BOARD_OFFSET_LEFT+(8*this.SQUARE_SIZE);
   this.height = this.BOARD_OFFSET_TOP+(8*this.SQUARE_SIZE);
+  this.pieces = new Array();
   this.fields = new Array(8);
   for (var i = 0; i < 8; i++) {
     this.fields[i] = new Array();
@@ -101,10 +98,10 @@ Chessboard.prototype.switchPositions = function() {
 
 /**
  * Draws itself to the canvas. Includes lettering, fields, pieces and currently
- * moved piece.
+ * dragged piece.
  */
-Chessboard.prototype.draw = function() {
-  var ctx = this.canvas.getContext("2d");
+Chessboard.prototype.draw = function(canvas) {
+  var ctx = canvas.getContext("2d");
   ctx.save();
   ctx.fillStyle = "Black";
   var fontSize = Math.min(this.SQUARE_SIZE*0.5, this.BOARD_OFFSET_TOP*0.8);
@@ -134,7 +131,7 @@ Chessboard.prototype.draw = function() {
         ctx.fillText(text, textPaddingLeft,
           this.BOARD_OFFSET_TOP+(i*this.SQUARE_SIZE)+textPaddingTop);
       }
-      this.fields[i][j].draw();
+      this.fields[i][j].draw(canvas);
     }
   }
   ctx.strokeRect(this.posX+this.BOARD_OFFSET_LEFT,
@@ -143,19 +140,20 @@ Chessboard.prototype.draw = function() {
   ctx.restore();
   for (var i = 0; i < this.pieces.length; i++) {
     if (this.pieces[i] != this.dragging.draggedPiece) {
-      this.pieces[i].draw();
+      this.pieces[i].draw(canvas);
     }
   }
   if (this.dragging.draggedPiece != null) {
-    this.dragging.draggedPiece.draw();
+    this.dragging.draggedPiece.draw(canvas, true);
   }
 };
 
 /**
  * Imports a normalized board state and sets creates pieces accordingly.
  * @param boardState
+ * @param canvas
  */
-Chessboard.prototype.loadBoard = function(boardState) {
+Chessboard.prototype.loadBoard = function(boardState, canvas) {
   // Prevent deleted pieces from loading their images and drawing to the canvas
   for (var i = 0; i < this.pieces.length; i++) {
     this.pieces[i].image.onload = null;
@@ -175,7 +173,7 @@ Chessboard.prototype.loadBoard = function(boardState) {
         if (pieceInfo.length == 2) {
           var currentPiece = new Piece(pieceInfo[0], pieceInfo[1], this);
           this.pieces.push(currentPiece);
-          currentPiece.loadImage();
+          currentPiece.loadImage(canvas);
           if (this.orientation == 1) {
             this.fields[i][j].setPiece(currentPiece);
           } else if (this.orientation == -1) {
@@ -185,4 +183,134 @@ Chessboard.prototype.loadBoard = function(boardState) {
       }
     }
   }
+};
+
+/**
+ * Generates the board placement part of a FEN-string the current pieces on the
+ * board.
+ * @return String, containing the board placement in FEN-notation
+ */
+Chessboard.prototype.getPiecePlacementFEN = function() {
+  var placementFEN = "";
+  var emptyCount = 0;
+
+  for (var i = 0; i < 8; i++) {
+
+    for (var j = 0; j < 8; j++) {
+      var currentField = this.fields[i][j];
+      if (currentField.piece == null) {
+        emptyCount++;
+      } else {
+        if (emptyCount > 0) {
+          placementFEN += emptyCount;
+          emptyCount = 0;
+        }
+        placementFEN += this.getFENLetter(currentField.piece);
+      }
+    }
+
+    if (emptyCount > 0) {
+      placementFEN += emptyCount;
+      emptyCount = 0;
+    }
+    if (i < 7) {
+      placementFEN += "/";
+    }
+  }
+
+  return placementFEN;
+};
+
+/**
+ * Converts a piece object to the respective letter that is used in FEN-notation.
+ * @param piece   Piece object, that should be converted to a FEN-letter
+ * @return String, containing the FEN-letter for the piece
+ */
+Chessboard.prototype.getFENLetter = function(piece) {
+  var letter = "";
+  if (piece.color == "black") {
+    switch (piece.type) {
+      case "pawn": letter = "p"; break;
+      case "rook": letter = "r"; break;
+      case "knight": letter = "n"; break;
+      case "bishop": letter = "b"; break;
+      case "queen": letter = "q"; break;
+      case "king": letter = "k"; break;
+      default: break;
+    }
+  } else {
+    switch (piece.type) {
+      case "pawn": letter = "P"; break;
+      case "rook": letter = "R"; break;
+      case "knight": letter = "N"; break;
+      case "bishop": letter = "B"; break;
+      case "queen": letter = "Q"; break;
+      case "king": letter = "K"; break;
+      default: break;
+    }
+  }
+  return letter;
+};
+
+/**
+ * Checks whether the current pieces on the board would allow castling moves.
+ * @return castling as {
+  * wk: white king in position,
+  * wrl: white rook queenside in position,
+  * wrr: white rook kingside in position,
+  * bk: black king in position,
+  * brl: black rook queenside in position,
+  * brr: black rook kingside in position,
+}
+ */
+Chessboard.prototype.checkCastling = function() {
+
+  // white castling
+  var wKingInPos = false;
+  if (this.fields[7][4].piece != null) {
+    if (this.fields[7][4].piece.color == "white" && this.fields[7][4].piece.type == "king") {
+      wKingInPos = true;
+    }
+  }
+  var wRookLInPos = false;
+  if (this.fields[7][0].piece != null) {
+    if (this.fields[7][0].piece.color == "white" && this.fields[7][0].piece.type == "rook") {
+      wRookLInPos = true;
+    }
+  }
+  var wRookRInPos = false;
+  if (this.fields[7][7].piece != null) {
+    if (this.fields[7][7].piece.color == "white" && this.fields[7][7].piece.type == "rook") {
+      wRookRInPos = true;
+    }
+  }
+
+  // black castling
+  var bKingInPos = false;
+  if (this.fields[0][4].piece != null) {
+    if (this.fields[0][4].piece.color == "black" && this.fields[0][4].piece.type == "king") {
+      bKingInPos = true;
+    }
+  }
+  var bRookLInPos = false;
+  if (this.fields[0][0].piece != null) {
+    if (this.fields[0][0].piece.color == "black" && this.fields[0][0].piece.type == "rook") {
+      bRookLInPos = true;
+    }
+  }
+  var bRookRInPos = false;
+  if (this.fields[0][7].piece != null) {
+    if (this.fields[0][7].piece.color == "black" && this.fields[0][7].piece.type == "rook") {
+      bRookRInPos = true;
+    }
+  }
+  var castling = {
+    wk: wKingInPos,
+    wrl: wRookLInPos,
+    wrr: wRookRInPos,
+    bk: bKingInPos,
+    brl: bRookLInPos,
+    brr: bRookRInPos
+  };
+  return castling;
 };

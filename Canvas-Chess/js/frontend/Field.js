@@ -2,10 +2,8 @@
 /**
  * Constructor
  * Creates a field object and initializes attributes.
- * @param chessboard    Chessboad object that the field should be located on
  */
-function Field(chessboard) {
-  this.canvas = chessboard.canvas;
+function Field() {
   this.piece = null;
   this.textualID = "";
   this.idX = 0;
@@ -83,8 +81,8 @@ Field.prototype.setColor = function(fieldColor) {
 /**
  * Draws the field on the canvas.
  */
-Field.prototype.draw = function() {
-  var ctx = this.canvas.getContext("2d");
+Field.prototype.draw = function(canvas) {
+  var ctx = canvas.getContext("2d");
   ctx.save();
   ctx.fillStyle = this.color;
   ctx.fillRect(this.posX, this.posY, this.size, this.size);

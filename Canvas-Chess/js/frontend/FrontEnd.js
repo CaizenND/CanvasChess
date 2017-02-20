@@ -11,18 +11,19 @@ var FrontEnd = (function(id, argumentString) {
 
 	// public attributes
 	var publicInterface = {
-		configuration: null,
-		chessboard : {}
+		chessboard: new Chessboard(),
+		canvas: {},
+		boardEditor: {}
 	}
 
 	// private attributes
+	var configuration = null;
+
 	var interactionMode = 2;		// No interaction (0), Drag & Drop (1), Select & Move (2)
 
 	var replay = null;
 
 	var engineInterface = new EngineInterface(publicInterface);
-
-	var boardEditor = {};
 
   var elements = {};
 
@@ -44,7 +45,7 @@ var FrontEnd = (function(id, argumentString) {
 	 */
 	publicInterface.move = function(move) {
 		// log feedback
-		if (engineInterface.getFeedback != undefined && publicInterface.configuration.showFeedback) {
+		if (engineInterface.getFeedback != undefined && configuration.showFeedback) {
 			var feedbackLog = elements.feedback;
 			var feedback = engineInterface.getFeedback(move);
 			while (feedbackLog.firstChild) {
@@ -55,7 +56,10 @@ var FrontEnd = (function(id, argumentString) {
 		}
 		// make move
     var moveResult = engineInterface.move(move);
-    if (moveResult && !engineInterface.isGameOver()) {
+		if (moveResult.ok) {
+			publicInterface.logMove(moveResult.string, moveResult.moveNumber);
+		}
+    if (moveResult.ok && !engineInterface.isGameOver()) {
       this.nextMove_timeout = window.setTimeout(
         function(next) {
           return function() {
@@ -71,8 +75,8 @@ var FrontEnd = (function(id, argumentString) {
 	 * redraw of the canvas.
 	 */
   publicInterface.refresh = function() {
-    this.chessboard.loadBoard(engineInterface.getBoard());
-		elements.boardCanvas.draw();
+    publicInterface.chessboard.loadBoard(engineInterface.getBoard(), publicInterface.canvas);
+		publicInterface.canvas.draw();
   };
 
 	/**
@@ -119,19 +123,6 @@ var FrontEnd = (function(id, argumentString) {
 	};
 
 	/**
-	 * Sets up the frontend for a game after the editor was used.
-	 * @param editorFEN		FEN-string that should be loaded as the starting board state
-	 */
-	publicInterface.editorCustomStart = function(editorFEN) {
-		disableEditor();
-		this.chessboard.setup();
-		writeControlsHtml();
-		initEngine(editorFEN);
-	  this.refresh();
-		this.activateBoard();
-	};
-
-	/**
 	 * Automatically replays a game, that was imported via an xml file.
 	 */
 	publicInterface.playReplay = function() {
@@ -160,7 +151,10 @@ var FrontEnd = (function(id, argumentString) {
 				var currentMove = replay.movelist[i];
 				callback = (function(move, progress, callback) {
 					return function() {
-						engineInterface.move(move);
+						var moveResult = engineInterface.move(move);
+						if (moveResult.ok) {
+							publicInterface.logMove(moveResult.string, moveResult.moveNumber);
+						}
 						this.refresh();
 						replay.progress = progress;
 						progressBar.value = progress;
@@ -211,12 +205,12 @@ var FrontEnd = (function(id, argumentString) {
  	 * @param moveID				ID of the move (total number of halfmoves)
 	 */
 	publicInterface.logMove = function(moveString, moveID) {
-		if (this.configuration.showLogging) {
+		if (configuration.showLogging) {
 			var logOut = elements.logging.output;
 			var loggedMove = createNewChild(logOut, "div", "log-move");
 			loggedMove.appendChild(document.createTextNode(moveString));
 			loggedMove.value = moveID;
-			if (this.configuration.allowLoggingInteraction) {
+			if (configuration.allowLoggingInteraction) {
 				loggedMove.onclick = (function(frontEnd, element) {
 					return function() {
 						var moveID = this.value;
@@ -236,7 +230,7 @@ var FrontEnd = (function(id, argumentString) {
 	 */
 	publicInterface.goToMove = function(moveID) {
 		if (active == true) {
-			if (this.configuration.showLogging) {
+			if (configuration.showLogging) {
 				var logOut = elements.logging.output;
 				var child = logOut.lastChild;
 				while (child != null && child.value > moveID) {
@@ -288,9 +282,9 @@ var FrontEnd = (function(id, argumentString) {
     elements.inner = inner;
     elements.container = container;
 		elements.container.className = "chess";
-    elements.boardCanvas = createNewChild(inner, "canvas", "boardCanvas");
+    publicInterface.canvas = createNewChild(inner, "canvas", "canvas");
 		prepareCanvas();
-		publicInterface.chessboard = new Chessboard(elements.boardCanvas);
+		publicInterface.canvas.addDrawableObject(publicInterface.chessboard, false);
 		elements.logging = createNewChild(container, "div", "logging");
 		elements.feedback = createNewChild(container, "div", "feedback");
     elements.controls = createNewChild(container, "div", "controls");
@@ -302,7 +296,7 @@ var FrontEnd = (function(id, argumentString) {
 	 * mouselisteners.
 	 */
 	var prepareCanvas = function() {
-		var canvas = elements.boardCanvas;
+		var canvas = publicInterface.canvas;
 	  canvas.drawableObjects = [];
 	  canvas.addDrawableObject = function(drawableObject, bottomLayer) {
 	    if (!this.drawableObjects.includes(drawableObject)) {
@@ -326,7 +320,7 @@ var FrontEnd = (function(id, argumentString) {
 	    ctx.fillRect(0, 0, this.width, this.height);
 	    ctx.restore();
 	    for (var i = 0; i < this.drawableObjects.length; i++) {
-	      this.drawableObjects[i].draw();
+	      this.drawableObjects[i].draw(this);
 	    }
 	  };
 	  canvas.interactionListener = {};
@@ -369,11 +363,11 @@ var FrontEnd = (function(id, argumentString) {
 			}
 		}
 
-		if (publicInterface.configuration == null) {
-			publicInterface.configuration = ConfigurationManager.getConfiguration("default");
+		if (configuration == null) {
+			configuration = ConfigurationManager.getConfiguration("default");
 		}
 
-		var config = publicInterface.configuration;
+		var config = configuration;
 
 		if (difficulty != null) {
 			config.defaultDifficulty = difficulty;
@@ -424,7 +418,7 @@ var FrontEnd = (function(id, argumentString) {
 	 * @param value		Value of the "config" argument
 	 */
 	var argumentConfig = function(value) {
-		publicInterface.configuration = ConfigurationManager.getConfiguration(value);
+		configuration = ConfigurationManager.getConfiguration(value);
 	};
 
 	/**
@@ -547,39 +541,67 @@ var FrontEnd = (function(id, argumentString) {
 	/**
 	 * Enables the board editor.
 	 * Deactivates the boatd interaction, creates the editor object, resizes the
-	 * frontend and redraws the canvas.
+	 * frontend, redraws the canvas and creates a mouse listener for the Editor
+	 * interaction.
 	 */
 	var enableEditor = function() {
+		var canvas = publicInterface.canvas;
 		publicInterface.deactivateBoard();
-		boardEditor = new BoardEditor(publicInterface, elements.controls);
+		publicInterface.boardEditor = new BoardEditor(editorCustomStart, elements.controls, publicInterface.chessboard, canvas);
+		canvas.addDrawableObject(publicInterface.boardEditor, true);
 		renderElements();
-		elements.boardCanvas.draw();
+		canvas.draw();
+		// mouse Listener
+		canvas.interactionListener.startListener = EditorStartListener.bind(publicInterface);
+		canvas.addEventListener("mouseup", canvas.interactionListener.startListener, false);
 	};
 
 	/**
-	 * Disables the board Editor.
+	 * Sets up the frontend for a game after the editor was used.
+	 * @param editorFEN		FEN-string that should be loaded as the starting board state
+	 */
+	var editorCustomStart = function(editorFEN) {
+		disableEditor();
+		var fen = publicInterface.chessboard.getPiecePlacementFEN() + editorFEN;
+		publicInterface.chessboard.CANVAS_OFFSET_LEFT = 0;
+		publicInterface.chessboard.setup();
+		writeControlsHtml();
+		initEngine(fen);
+		publicInterface.refresh();
+		publicInterface.activateBoard();
+	};
+
+	/**
+	 * Disables the board Editor and its mouse listerns.
 	 */
 	var disableEditor = function() {
-		boardEditor = null;
+		var canvas = publicInterface.canvas;
+		canvas.removeDrawableObject(publicInterface.boardEditor);
+		publicInterface.boardEditor = null;
+		var interactionListener = canvas.interactionListener;
+		canvas.removeEventListener("mouseup", interactionListener.startListener, false);
+		canvas.removeEventListener("mousemove", interactionListener.moveListener, false);
+		canvas.removeEventListener("mouseup", interactionListener.targetListener, false);
 	};
 
 	/**
 	 * Resizes the major frontend elements based on the sizes defined in the chessboard
 	 */
   var renderElements = function() {
-		var board = publicInterface.chessboard;
-    board.BOARD_OFFSET_TOP = board.SQUARE_SIZE*0.8;
-    board.BOARD_OFFSET_LEFT = board.SQUARE_SIZE*0.8;
-		board.setup();
+		var chessboard = publicInterface.chessboard;
+		var canvas = publicInterface.canvas;
+    chessboard.BOARD_OFFSET_TOP = chessboard.SQUARE_SIZE*0.8;
+    chessboard.BOARD_OFFSET_LEFT = chessboard.SQUARE_SIZE*0.8;
+		chessboard.setup();
     var e = elements;
-    var height = board.BOARD_OFFSET_TOP + board.CANVAS_OFFSET_TOP + (8*board.SQUARE_SIZE);
-    var width = board.BOARD_OFFSET_LEFT + board.CANVAS_OFFSET_LEFT + (8*board.SQUARE_SIZE);
+    var height = chessboard.BOARD_OFFSET_TOP + chessboard.CANVAS_OFFSET_TOP + (8*chessboard.SQUARE_SIZE);
+    var width = chessboard.BOARD_OFFSET_LEFT + chessboard.CANVAS_OFFSET_LEFT + (8*chessboard.SQUARE_SIZE);
 
 		e.container.style.width = width + 10 + "px";
     e.inner.style.height = height + 10 + "px";
 		e.inner.style.width = width + 10 + "px";
-    e.boardCanvas.height = height;
-    e.boardCanvas.width = width;
+    canvas.height = height;
+    canvas.width = width;
 		e.feedback.style.width = width + "px";
 		e.controls.style.width = width + "px";
 
@@ -598,8 +620,8 @@ var FrontEnd = (function(id, argumentString) {
 		var e = elements;
 		var controlsDiv = e.controls;
 		var loggingDiv = e.logging;
-		createGameControls(controlsDiv, publicInterface, engineInterface);
-		loggingDiv.output = createLoggingControls(loggingDiv, publicInterface);
+		createGameControls(controlsDiv, publicInterface, engineInterface, configuration);
+		loggingDiv.output = createLoggingControls(loggingDiv, publicInterface, configuration);
 		renderElements();
 	};
 
@@ -650,7 +672,6 @@ var FrontEnd = (function(id, argumentString) {
 
 	/**
 	 * Lets the engine calculate the best move and lets the engine perform it.
-	 * @param
 	 */
   var computerMove = function() {
     autoPlayTimeout = undefined;
@@ -661,8 +682,12 @@ var FrontEnd = (function(id, argumentString) {
 				function(engineInterface, frontEnd, next) {
 					return function() {
 						var moveResult = engineInterface.move(move);
+						if (moveResult.ok) {
+							publicInterface.logMove(moveResult.string, moveResult.moveNumber);
+						}
+						this
 						frontEnd.refresh();
-						if (moveResult && !engineInterface.isGameOver()) {
+						if (moveResult.ok && !engineInterface.isGameOver()) {
 							next();
 						}
 					};
@@ -679,9 +704,8 @@ var FrontEnd = (function(id, argumentString) {
 	var animateMove = function(move, callback) {
 		var start = move.start;
 		var target = move.target;
-		var canvas = elements.boardCanvas;
-		var board = publicInterface.chessboard;
-		var fields = board.fields;
+		var chessboard = publicInterface.chessboard;
+		var fields = chessboard.fields;
 		var startField = null;
 		var targetField = null;
 		var stepsPerField = 50;
@@ -698,7 +722,7 @@ var FrontEnd = (function(id, argumentString) {
 		}
 		if (startField != null && targetField != null && startField != targetField
 			&& startField.piece != null) {
-			board.dragging.draggedPiece = startField.piece;
+			chessboard.dragging.draggedPiece = startField.piece;
 			var fieldDistanceX = Math.abs(startField.idX - targetField.idX);
 			var fieldDistanceY = Math.abs(startField.idY - targetField.idY);
 			var fieldDistanceXY = Math.sqrt(Math.pow(fieldDistanceX,2)+Math.pow(fieldDistanceY,2));
@@ -718,26 +742,26 @@ var FrontEnd = (function(id, argumentString) {
 					function(animatedPiece) {
 						return function() {
 							// check if our animation is still the correct one
-							if (board.dragging.draggedPiece == animatedPiece) {
-								var pieceNewPosX = board.dragging.draggedPiece.posX + canvasDistancePerStepX;
-								var pieceNewPosY = board.dragging.draggedPiece.posY + canvasDistancePerStepY;
-								board.dragging.draggedPiece.setPosition(pieceNewPosX, pieceNewPosY);
-								canvas.draw();
+							if (chessboard.dragging.draggedPiece == animatedPiece) {
+								var pieceNewPosX = chessboard.dragging.draggedPiece.posX + canvasDistancePerStepX;
+								var pieceNewPosY = chessboard.dragging.draggedPiece.posY + canvasDistancePerStepY;
+								chessboard.dragging.draggedPiece.setPosition(pieceNewPosX, pieceNewPosY);
+								publicInterface.canvas.draw();
 							}
 						};
-					}(board.dragging.draggedPiece), (i+1) * timePerStep);
+					}(chessboard.dragging.draggedPiece), (i+1) * timePerStep);
 			}
 			window.setTimeout(
 				function(animatedPiece) {
 					return function() {
-						if (board.dragging.draggedPiece == animatedPiece) {
-							board.dragging.draggedPiece = null;
+						if (chessboard.dragging.draggedPiece == animatedPiece) {
+							chessboard.dragging.draggedPiece = null;
 							if (callback != undefined && callback != null) {
 								callback();
 							}
 						}
 					};
-				}(board.dragging.draggedPiece), (totalSteps * timePerStep) * 1.05);
+				}(chessboard.dragging.draggedPiece), (totalSteps * timePerStep) * 1.05);
 				return totalSteps * timePerStep;
 		}
 	};
@@ -748,7 +772,7 @@ var FrontEnd = (function(id, argumentString) {
 	var activateMoveListener = function() {
 		// Geht auf Nummer sicher, dass nicht auf einmal mehrere Listener gleichzeitig aktiv sind
 		deactivateMoveListener();
-		var canvas = elements.boardCanvas;
+		var canvas = publicInterface.canvas;
 		var interactionListener = canvas.interactionListener;
 		if (interactionMode == 1) {
 			canvas.interactionListener.startListener = GameStartListenerDown.bind(publicInterface);
@@ -763,7 +787,7 @@ var FrontEnd = (function(id, argumentString) {
 	 * Deactivates the mouselisteners.
 	 */
 	var deactivateMoveListener = function() {
-		var canvas = publicInterface.chessboard.canvas;
+		var canvas = publicInterface.canvas;
 		var interactionListener = canvas.interactionListener;
 		canvas.removeEventListener("mousedown", interactionListener.startListener, false);
 		canvas.removeEventListener("mouseup", interactionListener.startListener, false);
