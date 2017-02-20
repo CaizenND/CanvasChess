@@ -190,3 +190,37 @@ var parseMoveNode = function(moveNode, expectedID, filename) {
   }
   return move;
 };
+
+/**
+ * Extends a canvas object with some basic methods to manage drawable objects, which
+ * should be drawn to the canvas.
+ * @param canvas  The canvas object, which should be extended
+ */
+var makeCanvasDrawable = function(canvas) {
+  canvas.drawableObjects = [];
+  canvas.addDrawableObject = function(drawableObject, bottomLayer) {
+    if (!this.drawableObjects.includes(drawableObject)) {
+      if (bottomLayer) {
+        this.drawableObjects.splice(0, 0, drawableObject)
+      } else {
+        this.drawableObjects.push(drawableObject);
+      }
+    }
+  };
+  canvas.removeDrawableObject = function(drawableObject) {
+    var index = this.drawableObjects.indexOf(drawableObject);
+    if (index >= 0) {
+      this.drawableObjects.splice(index, 1);
+    }
+  };
+  canvas.draw = function() {
+    var ctx = this.getContext("2d");
+    ctx.save();
+    ctx.fillStyle = "White";
+    ctx.fillRect(0, 0, this.width, this.height);
+    ctx.restore();
+    for (var i = 0; i < this.drawableObjects.length; i++) {
+      this.drawableObjects[i].draw(this);
+    }
+  };
+};
