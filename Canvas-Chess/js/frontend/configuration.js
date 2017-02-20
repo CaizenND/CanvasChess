@@ -79,7 +79,6 @@ JackGameConfiguration.showAISelect = false;
 JackGameConfiguration.defaultAI = ["human", "computer"]; //[white, black] - human, computer
 JackGameConfiguration.showDifficulty = false;
 JackGameConfiguration.showExport = false;
-JackGameConfiguration.allowLoggingInteraction = false;
 ConfigurationManager.addConfiguration(JackGameConfiguration);
 
 var JackSolutionConfiguration = new Configuration();
