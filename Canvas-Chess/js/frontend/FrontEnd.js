@@ -7,12 +7,12 @@
  * @param	id								ID of the DIV node in which the frontend should be created
  * @param argumentString		String containing configuration parameters for the frontend
  */
-var FrontEnd = (function(id, argumentString) {
+var Frontend = (function(id, argumentString) {
 
 	// public attributes
 	var publicInterface = {
-		chessboard: new Chessboard(),
 		canvas: {},
+		chessboard: new Chessboard(),
 		boardEditor: {}
 	}
 
@@ -57,7 +57,7 @@ var FrontEnd = (function(id, argumentString) {
 		// make move
     var moveResult = engineInterface.move(move);
 		if (moveResult.ok) {
-			publicInterface.logMove(moveResult.string, moveResult.moveNumber);
+			logMove(moveResult.string, moveResult.moveNumber);
 		}
     if (moveResult.ok && !engineInterface.isGameOver()) {
       this.nextMove_timeout = window.setTimeout(
@@ -153,7 +153,7 @@ var FrontEnd = (function(id, argumentString) {
 					return function() {
 						var moveResult = engineInterface.move(move);
 						if (moveResult.ok) {
-							publicInterface.logMove(moveResult.string, moveResult.moveNumber);
+							logMove(moveResult.string, moveResult.moveNumber);
 						}
 						this.refresh();
 						replay.progress = progress;
@@ -184,8 +184,8 @@ var FrontEnd = (function(id, argumentString) {
 
 	/**
 	 * Changes the control for a given color between player and AI.
-	 * @param color			New controller for the color (human / computer)
-	 * @param control		Color for which the control should be changed
+	 * @param color			Color for which the control should be changed
+	 * @param control		New controller for the color (human / computer)
 	 */
 	publicInterface.setColorControl = function(color, control) {
 		if ((color == "white" || color == "black")
@@ -200,34 +200,9 @@ var FrontEnd = (function(id, argumentString) {
 	};
 
 	/**
-	 * Logs a move in the logging area.
-	 * @param moveString		String that should be displayed in the logging area
- 	 * @param moveID				ID of the move (total number of halfmoves)
-	 */
-	publicInterface.logMove = function(moveString, moveID) {
-		if (configuration.showLogging) {
-			var logOut = elements.logging.output;
-			var loggedMove = createNewChild(logOut, "div", "log-move");
-			loggedMove.appendChild(document.createTextNode(moveString));
-			loggedMove.value = moveID;
-			if (configuration.allowLoggingInteraction) {
-				loggedMove.onclick = (function(frontEnd, element) {
-					return function() {
-						var moveID = this.value;
-						frontEnd.goToMove(moveID);
-					}.bind(element)
-				})(publicInterface, loggedMove);
-
-			}
-			// always scroll to bottom to show newest move
-			logOut.scrollTop = logOut.scrollHeight;
-		}
-	};
-
-	/**
-	 * Returns to an earlier move in the game.
-	 * @param moveID		ID of the move to which the game should return
-	 */
+ 	 * Returns to an earlier move in the game.
+ 	 * @param moveID		ID of the move to which the game should return
+ 	 */
 	publicInterface.goToMove = function(moveID) {
 		if (active == true) {
 			if (configuration.showLogging) {
@@ -425,14 +400,14 @@ var FrontEnd = (function(id, argumentString) {
 	/**
 	 * Processes the "players" argument.
 	 * @param value		Value of the "players" argument
-	 * @return String containing default players (human / computer) or null if wrong format
+	 * @return String[] containing default players (human / computer) or null if wrong format
 	 */
 	var argumentsPlayers = function(value) {
-		var defaultAI = value.split(",");
+		var defaultplayers = value.split(",");
 		if (defaultAI.length == 2 &&
-			(defaultAI[0] == "human" || defaultAI[0] == "computer") &&
-			(defaultAI[1] == "human" || defaultAI[1] == "computer")) {
-			return defaultAI;
+			(defaultplayers[0] == "human" || defaultplayers[0] == "computer") &&
+			(defaultplayers[1] == "human" || defaultplayers[1] == "computer")) {
+			return defaultplayers;
 		}
 		return null;
 	};
@@ -654,14 +629,14 @@ var FrontEnd = (function(id, argumentString) {
 		// maybe something happened during findmove
 		if (active == true) {
 			animateMove(move,
-				function(engineInterface, frontEnd, next) {
+				function(engineInterface, frontend, next) {
 					return function() {
 						var moveResult = engineInterface.move(move);
 						if (moveResult.ok) {
-							publicInterface.logMove(moveResult.string, moveResult.moveNumber);
+							logMove(moveResult.string, moveResult.moveNumber);
 						}
 						this
-						frontEnd.refresh();
+						frontend.refresh();
 						if (moveResult.ok && !engineInterface.isGameOver()) {
 							next();
 						}
@@ -671,10 +646,33 @@ var FrontEnd = (function(id, argumentString) {
   };
 
 	/**
+	 * Logs a move in the logging area.
+	 * @param moveString		String that should be displayed in the logging area
+	 * @param moveID				ID of the move (total number of halfmoves)
+	 */
+	var logMove = function(moveString, moveID) {
+		if (configuration.showLogging) {
+			var logOut = elements.logging.output;
+			var loggedMove = createNewChild(logOut, "div", "log-move");
+			loggedMove.appendChild(document.createTextNode(moveString));
+			loggedMove.value = moveID;
+			if (configuration.allowLoggingInteraction) {
+				loggedMove.onclick = (function(frontend, element) {
+					return function() {
+						var moveID = this.value;
+						frontend.goToMove(moveID);
+					}.bind(element)
+				})(publicInterface, loggedMove);
+			}
+			// always scroll to bottom to show newest move
+			logOut.scrollTop = logOut.scrollHeight;
+		}
+	};
+
+	/**
 	 * Animates a move on the canvas / chessboard.
 	 * @param move				{start-field, target-field, promotion (can be null)}
 	 * @param callback		function that should be called after the animation is complete
-	 * @return Integer containing the total time needed for the animation in milliseconds
 	 */
 	var animateMove = function(move, callback) {
 		var start = move.start;
@@ -683,8 +681,8 @@ var FrontEnd = (function(id, argumentString) {
 		var fields = chessboard.fields;
 		var startField = null;
 		var targetField = null;
-		var stepsPerField = 50;
-		var timePerStep = 10;
+		var stepsPerUnit = 0.6;
+		var timePerStep = 16.67;
 		for (var i = 0; i < fields.length; i++) {
 			for (var j = 0; j < 8; j++) {
 				if (fields[i][j].textualID == start) {
@@ -698,46 +696,40 @@ var FrontEnd = (function(id, argumentString) {
 		if (startField != null && targetField != null && startField != targetField
 			&& startField.piece != null) {
 			chessboard.dragging.draggedPiece = startField.piece;
-			var fieldDistanceX = Math.abs(startField.idX - targetField.idX);
-			var fieldDistanceY = Math.abs(startField.idY - targetField.idY);
-			var fieldDistanceXY = Math.sqrt(Math.pow(fieldDistanceX,2)+Math.pow(fieldDistanceY,2));
-			var totalSteps = fieldDistanceXY * stepsPerField;
-			var canvasDistanceX = Math.abs((startField.posX + (startField.size * 0.1)) - (targetField.posX + (targetField.size * 0.1)));
-			var canvasDistanceY = Math.abs((startField.posY + (startField.size * 0.1)) - (targetField.posY + (targetField.size * 0.1)));
-			var canvasDistancePerStepX = canvasDistanceX / totalSteps;
+			var distanceX = Math.abs((startField.posX + (startField.size * 0.1)) - (targetField.posX + (targetField.size * 0.1)));
+			var distanceY = Math.abs((startField.posY + (startField.size * 0.1)) - (targetField.posY + (targetField.size * 0.1)));
+			var distanceXY = Math.sqrt(Math.pow(distanceX,2)+Math.pow(distanceY,2));
+			var totalSteps = distanceXY * stepsPerUnit;
+			var distancePerStepX = distanceX / totalSteps;
 			if (startField.posX > targetField.posX) {
-				canvasDistancePerStepX = canvasDistancePerStepX * -1;
+				distancePerStepX = distancePerStepX * -1;
 			}
-			var canvasDistancePerStepY = canvasDistanceY / totalSteps;
+			var distancePerStepY = distanceY / totalSteps;
 			if (startField.posY > targetField.posY) {
-				canvasDistancePerStepY = canvasDistancePerStepY * -1;
+				distancePerStepY = distancePerStepY * -1;
 			}
-			for (var i = 0; i < totalSteps; i++) {
-				window.setTimeout(
-					function(animatedPiece) {
-						return function() {
-							// check if our animation is still the correct one
-							if (chessboard.dragging.draggedPiece == animatedPiece) {
-								var pieceNewPosX = chessboard.dragging.draggedPiece.posX + canvasDistancePerStepX;
-								var pieceNewPosY = chessboard.dragging.draggedPiece.posY + canvasDistancePerStepY;
-								chessboard.dragging.draggedPiece.setPosition(pieceNewPosX, pieceNewPosY);
-								publicInterface.canvas.draw();
-							}
-						};
-					}(chessboard.dragging.draggedPiece), (i+1) * timePerStep);
-			}
-			window.setTimeout(
-				function(animatedPiece) {
-					return function() {
-						if (chessboard.dragging.draggedPiece == animatedPiece) {
-							chessboard.dragging.draggedPiece = null;
-							if (callback != undefined && callback != null) {
-								callback();
-							}
+			var animate = function(animatedPiece, distancePerStepX, distancePerStepY, timePerStep, stepsToGo, callback) {
+				// check if our animation is still the correct one
+				if (chessboard.dragging.draggedPiece == animatedPiece) {
+					var pieceNewPosX = chessboard.dragging.draggedPiece.posX + distancePerStepX;
+					var pieceNewPosY = chessboard.dragging.draggedPiece.posY + distancePerStepY;
+					animatedPiece.setPosition(pieceNewPosX, pieceNewPosY);
+					publicInterface.canvas.draw();
+					if (stepsToGo > 0) {
+						window.setTimeout(animate, timePerStep,
+							animatedPiece, distancePerStepX, distancePerStepY, timePerStep, stepsToGo-1, callback);
+					} else {
+						chessboard.dragging.draggedPiece = null;
+						if (callback != undefined && callback != null) {
+							callback();
 						}
-					};
-				}(chessboard.dragging.draggedPiece), (totalSteps * timePerStep) * 1.05);
-				return totalSteps * timePerStep;
+					}
+				} else {
+					animatedPiece.setPosition(startField.posX + (startField.size * 0.1), startField.posY + (startField.size * 0.1));
+				}
+			}
+			window.setTimeout(animate, timePerStep,
+				chessboard.dragging.draggedPiece, distancePerStepX, distancePerStepY, timePerStep, totalSteps, callback);
 		}
 	};
 

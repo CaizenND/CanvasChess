@@ -42,12 +42,12 @@ var createMetaAndContainer = function(parentElement, title) {
  * Creates the game controls for the frontend.
  * Uses the defined configurations.
  * @param parentElement     HTML node element that should contain the new nodes
- * @param frontEnd          Frontend object that should accessed by the controls
+ * @param frontend          Frontend object that should accessed by the controls
  * @param engineInterface   Engine interface object that should accessed by the controls
  * @param config            The configuration object for the frontend
  * @return DIV element containing the controls
  */
-var createGameControls = function(parentElement, frontEnd, engineInterface, config) {
+var createGameControls = function(parentElement, frontend, engineInterface, config) {
 
   // Container & meta-container (collapse)
   var gameControls = createMetaAndContainer(parentElement, "Game controls");
@@ -68,12 +68,12 @@ var createGameControls = function(parentElement, frontEnd, engineInterface, conf
       input.type = "radio";
       input.name = "interaction-options";
       input.value = i+1;
-      input.onchange = (function(frontEnd, element) {
+      input.onchange = (function(frontend, element) {
         return function() {
           var mode = this.value;
-          frontEnd.setInteractionMode(mode);
+          frontend.setInteractionMode(mode);
         }.bind(element)
-      })(frontEnd, input);
+      })(frontend, input);
       input.id = "interaction-options-" + i;
       if (input.value == config.defaultInteractionMode) {
         input.checked = true;
@@ -135,11 +135,11 @@ var createGameControls = function(parentElement, frontEnd, engineInterface, conf
       input.type = "radio";
       input.name = "control-white-options";
       input.value = buttonTexts[i].toLowerCase();
-      input.onchange = (function(frontEnd, element) {
+      input.onchange = (function(frontend, element) {
         return function() {
-          frontEnd.setColorControl("white", this.value);
+          frontend.setColorControl("white", this.value);
         }.bind(element)
-      })(frontEnd, input);
+      })(frontend, input);
       input.id = "control-options" + i;
       if (input.value == config.defaultAI[0]) {
         input.checked = true;
@@ -170,11 +170,11 @@ var createGameControls = function(parentElement, frontEnd, engineInterface, conf
       input.type = "radio";
       input.name = "control-options";
       input.value = buttonTexts[i].toLowerCase();
-      input.onchange = (function(frontEnd, element) {
+      input.onchange = (function(frontend, element) {
         return function() {
-          frontEnd.setColorControl("black", this.value);
+          frontend.setColorControl("black", this.value);
         }.bind(element)
-      })(frontEnd, input);
+      })(frontend, input);
       input.id = "control-black-options" + i;
       if (input.value == config.defaultAI[1]) {
         input.checked = true;
@@ -236,12 +236,12 @@ var createGameControls = function(parentElement, frontEnd, engineInterface, conf
 
     var resetButton = createNewChild(container, "button", "button-chess item-center");
     resetButton.appendChild(document.createTextNode("Reset"));
-    resetButton.onclick = (function(frontEnd) {
+    resetButton.onclick = (function(frontend) {
       return function() {
         var moveID = this.value;
-        frontEnd.goToMove(0);
+        frontend.goToMove(0);
       }
-    })(frontEnd);
+    })(frontend);
   }
 
   // Export game
@@ -250,7 +250,7 @@ var createGameControls = function(parentElement, frontEnd, engineInterface, conf
 
     var exportButton = createNewChild(container, "button", "button-chess item-center");
     exportButton.appendChild(document.createTextNode("Export game as XML"));
-    exportButton.onclick = frontEnd.exportGameToXML;
+    exportButton.onclick = frontend.exportGameToXML;
   }
 
   if (!gameControls.hasChildNodes()) {
@@ -265,11 +265,11 @@ var createGameControls = function(parentElement, frontEnd, engineInterface, conf
   * Creates the logging controls for the frontend.
   * Uses the defined configurations.
   * @param parentElement     HTML node element that should contain the new nodes
-  * @param frontEnd          Frontend object that should accessed by the controls
+  * @param frontend          Frontend object that should accessed by the controls
   * @param config            The configuration object for the frontend
   * @return DIV element containing the controls
   */
-var createLoggingControls = function(parentElement, frontEnd, config) {
+var createLoggingControls = function(parentElement, frontend, config) {
 
   // Container & meta-container (collapse)
   if (config.showLogging) {
@@ -284,10 +284,10 @@ var createLoggingControls = function(parentElement, frontEnd, config) {
  /**
   * Creates the replay controls for the frontend.
   * @param parentElement     HTML node element that should contain the new nodes
-  * @param frontEnd          Frontend object that should accessed by the controls
+  * @param frontend          Frontend object that should accessed by the controls
   * @return DIV element containing the controls
   */
-var createReplayControls = function(parentElement, frontEnd) {
+var createReplayControls = function(parentElement, frontend) {
 
   // Container & meta-container (collapse)
   var replayControls = createMetaAndContainer(parentElement, "Replay controls");
@@ -302,11 +302,11 @@ var createReplayControls = function(parentElement, frontEnd) {
 
   var replayButton = createNewChild(container, "button", "button-replay button-chess item-center");
   replayButton.appendChild(document.createTextNode("Replay"));
-  replayButton.onclick = (function(frontEnd) {
+  replayButton.onclick = (function(frontend) {
     return function() {
-      frontEnd.playReplay();
+      frontend.playReplay();
     }
-  })(frontEnd);
+  })(frontend);
 
   return replayControls;
 };

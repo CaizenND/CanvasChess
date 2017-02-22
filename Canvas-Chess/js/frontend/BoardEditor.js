@@ -4,16 +4,16 @@
  * Sets up the editor by creating the controls, registering itself at the canvas
  * and adding a mouselistener to the canvas.
  * @param returnToFrontEnd    The functionn, which is called after the Editor is done
- * @param frontEndControls    The div element, which should contain the controls
+ * @param frontendControls    The div element, which should contain the controls
  * @param chessboard          The chessboard object, which should display the pieces
  * @param canvas              The canvas element, which should be used to display the editor
  */
-function BoardEditor(returnToFrontEnd, frontEndControls, chessboard, canvas) {
+function BoardEditor(returnToFrontEnd, frontendControls, chessboard, canvas) {
   this.returnToFrontEnd = returnToFrontEnd;
 
   // controls
-  this.frontEndControls = frontEndControls;
-  this.controls = createEditorControls(frontEndControls, this);
+  this.frontendControls = frontendControls;
+  this.controls = createEditorControls(frontendControls, this);
 
   // canvas
   chessboard.CANVAS_OFFSET_LEFT = 2 * chessboard.SQUARE_SIZE;
@@ -195,7 +195,7 @@ BoardEditor.prototype.exportFEN = function() {
   // Fullmove number
   var fullmoveFEN = " 1";
   var fen = activeFEN + castlingFEN + enPassantFEN + halfmoveFEN + fullmoveFEN;
-  this.frontEndControls.removeChild(this.controls.meta);
-  this.frontEndControls.removeChild(this.controls);
+  this.frontendControls.removeChild(this.controls.meta);
+  this.frontendControls.removeChild(this.controls);
   this.returnToFrontEnd(fen);
 };

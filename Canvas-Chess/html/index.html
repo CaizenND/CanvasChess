@@ -7,22 +7,21 @@
 
 <link rel="stylesheet" href="../css/chess/chess.css"/>
 
-<script src="../js/engine/engine.js"></script>
-<script src="../js/engine/engine_interface.js"></script>
-
-<script src="../js/frontend/ChessGameListener.js"></script>
-<script src="../js/frontend/FrontEnd.js"></script>
-<script src="../js/frontend/Chessboard.js"></script>
-<script src="../js/frontend/Field.js"></script>
-<script src="../js/frontend/Piece.js"></script>
-<script src="../js/frontend/BoardEditor.js"></script>
-<script src="../js/frontend/ChessEditorListener.js"></script>
+<script src="../js/frontend/frontend.js"></script>
+<script src="../js/frontend/chessGameListener.js"></script>
+<script src="../js/frontend/chessboard.js"></script>
+<script src="../js/frontend/field.js"></script>
+<script src="../js/frontend/piece.js"></script>
+<script src="../js/frontend/boardEditor.js"></script>
+<script src="../js/frontend/chessEditorListener.js"></script>
 <script src="../js/frontend/controls.js"></script>
 <script src="../js/frontend/configurationManager.js"></script>
 <script src="../js/frontend/configuration.js"></script>
 
+<script src="../js/tools/tools.js"></script>
 
-<script src="../js/tools/Tools.js"></script>
+<script src="../js/engine/engineInterface.js"></script>
+<script src="../js/engine/engine.js"></script>
 
 </head>
 <body>
@@ -51,7 +50,7 @@ var ARGUMENTS = "";
 // ARGUMENTS += "promotion:rook;";
 // ARGUMENTS += "difficulty:1;";
 // ARGUMENTS += "editor;";
-var frontEnd = new FrontEnd("board-goes-here", ARGUMENTS);
+var frontEnd = new Frontend("board-goes-here", ARGUMENTS);
 </script>
 
 <!-- ...and here -->
