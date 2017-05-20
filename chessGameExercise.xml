@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<exercise type="chessGame">
-	<config>config:jackGame;replay:replay.xml;</config>
-	<task>Gewinnen Sie gegen den Computer auf der Schwierigkeitsstufe 3.</task>
-	<advice>
-		<option> Richte dein Auge bei Sonnenaufgang auf den Läufer. </option>
-	</advice>
-</exercise>
